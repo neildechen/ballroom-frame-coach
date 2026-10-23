@@ -60,39 +60,45 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 
 /* ---- bottom panel: message band + readings grid ---- */
 .dock { grid-row: 3; background: var(--panel); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
-.banner { display: grid; gap: 2px; padding: 12px max(16px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid var(--line); box-shadow: inset 6px 0 0 var(--line); transition: background-color 120ms; }
-.banner .main { font-size: clamp(19px, 3.4vw, 30px); font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+.banner {
+  /* Fixed height (room for two lines) so a change of message never resizes the camera picture. */
+  --main: clamp(19px, 3.4vw, 30px);
+  height: calc(24px + 2.3 * var(--main)); overflow: hidden; align-content: center;
+  display: grid; gap: 2px; padding: 12px max(16px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid var(--line); box-shadow: inset 6px 0 0 var(--line); transition: background-color 120ms;
+}
+.banner .main { font-size: var(--main); line-height: 1.15; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .banner .sub { font-size: 14px; color: var(--dim); }
 .banner .sub:empty { display: none; }
 .banner.ok { background: var(--ok-soft); box-shadow: inset 6px 0 0 var(--ok); }
 .banner.ok .main { color: var(--ok); }
 .banner.fault { background: var(--fault); box-shadow: none; color: #fff; }
 .banner.fault .sub { color: rgba(255, 255, 255, 0.88); }
-.banner.idle .main { color: var(--dim); font-size: clamp(16px, 2.6vw, 22px); font-weight: 600; }
+.banner.idle .main { color: var(--dim); font-size: calc(var(--main) * 0.8); font-weight: 600; }
 
-.tiles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.tiles { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); }
 .tiles:empty { display: none; }
 .tile { display: grid; gap: 2px; align-content: start; padding: 10px 14px 12px; min-width: 0; border-right: 1px solid var(--line); box-shadow: inset 0 3px 0 var(--line); }
 .tile:last-child { border-right: 0; }
 .tile .k { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--dim); }
-.tile .v { font-size: clamp(14px, 1.7vw, 17px); font-weight: 650; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.tile .v { font-size: clamp(14px, 1.7vw, 17px); font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tile .s { display: none; }
 .tile.ok { box-shadow: inset 0 3px 0 var(--ok); }
 .tile.fault { box-shadow: inset 0 3px 0 var(--fault); }
+.tile.info { box-shadow: inset 0 3px 0 var(--guide); }
 .tile.fault .v { color: var(--fault); }
 .tile.idle .v { color: var(--dim); font-weight: 500; }
 @media (max-width: 720px) {
   .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .tile { border-top: 1px solid var(--line); }
   .tile:nth-child(2n) { border-right: 0; }
-  .tile[data-id="shoulders"] { grid-column: span 2; border-right: 0; }
 }
 @media (max-width: 560px) { #fps { display: none; } .cell { padding: 0 11px; font-size: 13px; } [data-look="glance"] .tile .s { font-size: 12px; } }
 
 /* ---- Glance look: one large instruction, a compact status row ---- */
-[data-look="glance"] .banner { padding-block: 16px 18px; }
-[data-look="glance"] .banner .main { font-size: clamp(28px, 7.5vw, 56px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
-[data-look="glance"] .banner .sub { font-size: clamp(14px, 2.4vw, 19px); }
+[data-look="glance"] .banner { --main: clamp(28px, 7.5vw, 56px); --subf: clamp(14px, 2.4vw, 19px); padding-block: 16px 18px; height: calc(36px + 2.1 * var(--main) + 1.4 * var(--subf)); }
+[data-look="glance"] .banner .main { font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
+[data-look="glance"] .banner .sub { font-size: var(--subf); line-height: 1.4; }
+[data-look="glance"] .tile[data-id="sway"] { display: none; }
 [data-look="glance"] .tiles { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 [data-look="glance"] .tile, [data-look="glance"] .tile.ok, [data-look="glance"] .tile.fault { border-top: 0; grid-column: auto; border-right: 1px solid var(--line); padding: 12px 6px 12px; justify-items: center; box-shadow: none; }
 [data-look="glance"] .tile:last-child { border-right: 0; }

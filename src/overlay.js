@@ -92,6 +92,14 @@ export function drawOverlay(ctx, { rect, aspect, mirror, verdict, dpr = 1, quiet
   // above S) and the sway-adjusted horizontal through S.
   calm('ok');
   if (m.mode === 'full') line(ctx, map(mid(P.LH, P.RH)), map(S), COLORS.guide, 2 * k, [8 * k, 8 * k]);
+  // Sway readout just below the body axis (below the hips, or below the shoulders in torso view).
+  {
+    const base = m.mode === 'full' ? mid(P.LH, P.RH) : add(S, scale(F.u, -len(sub(P.LS, P.RS)) * 0.9));
+    const sw = Math.round(Math.abs(m.sway));
+    ctx.globalAlpha = 1; // a readout, not a guide: never faded
+    label(ctx, map(add(base, scale(F.u, -reach * 0.34))), sw === 0 ? 'sway 0°' : `sway ${sw}° ${m.sway > 0 ? 'R' : 'L'}`, COLORS.guide, 17 * k);
+    calm('ok');
+  }
   line(ctx, map(add(S, scale(F.hL, -reach * 1.15))), map(add(S, scale(F.hL, reach * 1.15))), COLORS.guide, 2 * k, [8 * k, 8 * k]);
 
   // Shoulder line (the reference itself in torso mode).

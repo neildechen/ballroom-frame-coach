@@ -39,8 +39,13 @@ test('head messages use the dancer\'s own left and right', () => {
 });
 
 test('sway reads in plain words', () => {
-  assert.equal(feedback(v({ sway: 12.4 })).sway, 'Sway 12° to your right');
-  assert.equal(feedback(v({ sway: -0.8 })).sway, 'Upright');
+  assert.equal(feedback(v({ sway: 12.4 })).sway, 'Sway 12° right');
+  assert.equal(feedback(v({ sway: -1.2 })).sway, 'Sway 1° left');
+  assert.equal(feedback(v({ sway: 0.3 })).sway, 'Sway 0°');
+  const tile = (s) => feedback(v({ sway: s })).tiles.find((x) => x.id === 'sway');
+  assert.equal(tile(-17.6).value, '18° to your left');
+  assert.equal(tile(0.2).value, '0°, upright');
+  assert.equal(tile(5).tone, 'info');
 });
 
 test('torso mode explains the shoulder reference instead of judging it', () => {
@@ -53,6 +58,9 @@ test('nobody in view asks the dancer to step in', () => {
   const f = feedback({ tracked: false });
   assert.equal(f.banner.tone, 'idle');
   assert.match(f.banner.text, /shoulders and elbows/);
+  // The readings stay in place (greyed) so the bottom panel does not change height.
+  assert.deepEqual(f.tiles.map((x) => x.id), feedback(v()).tiles.map((x) => x.id));
+  assert.ok(f.tiles.every((x) => x.tone === 'idle'));
 });
 
 test('switched-off checks read "Turned off" and never reach the banner', () => {
@@ -76,5 +84,5 @@ test('each finding comes with an instruction for the Glance look', () => {
     assert.equal(b.instruction, instruction);
     assert.equal(b.detail, detail);
   }
-  assert.deepEqual(feedback(v()).tiles.map((t) => t.short), ['Left', 'Right', 'Tilt', 'Head', 'Shoulders']);
+  assert.deepEqual(feedback(v()).tiles.map((t) => t.short), ['Sway', 'Left', 'Right', 'Tilt', 'Head', 'Shoulders']);
 });

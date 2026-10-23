@@ -4,7 +4,7 @@ const deg = (d) => `${Math.abs(d).toFixed(0)}°`;
 const side = (dir) => (dir === 'left' ? 'left' : 'right');
 
 const OFF = (id, label) => ({ id, label, value: 'Turned off', tone: 'idle' });
-const SHORT = { left: 'Left', right: 'Right', headTilt: 'Tilt', headPos: 'Head', shoulders: 'Shoulders' };
+const SHORT = { sway: 'Sway', left: 'Left', right: 'Right', headTilt: 'Tilt', headPos: 'Head', shoulders: 'Shoulders' };
 
 function sideTile(id, name, s) {
   if (s.state === 'off') return OFF(id, name);
@@ -17,13 +17,17 @@ export function feedback(v) {
   if (!v?.tracked) {
     return {
       banner: { text: 'Step into view so both shoulders and elbows are visible', tone: 'idle', instruction: 'Step into view', detail: 'Both shoulders and elbows need to be in the picture' },
-      tiles: [],
+      // Same cells as when tracking, so the panel keeps its height and the picture does not jump.
+      tiles: [['sway', 'Sway'], ['left', 'Left side'], ['right', 'Right side'], ['headTilt', 'Head tilt'], ['headPos', 'Head position'], ['shoulders', 'Shoulders']]
+        .map(([id, label]) => ({ id, label, value: 'Not visible', tone: 'idle', short: SHORT[id] })),
       sway: '',
       mode: '',
     };
   }
   const h = v.head;
+  const swayDeg = Math.round(Math.abs(v.sway));
   const tiles = [
+    { id: 'sway', label: 'Sway', value: swayDeg === 0 ? '0°, upright' : `${swayDeg}° to your ${v.sway > 0 ? 'right' : 'left'}`, tone: 'info' },
     sideTile('left', 'Left side', v.left),
     sideTile('right', 'Right side', v.right),
     h.tilt === 'off' ? OFF('headTilt', 'Head tilt') : h.tilt === 'untracked'
@@ -72,6 +76,6 @@ export function feedback(v) {
   if (text !== clear) tone = 'fault';
   for (const t of tiles) t.short = SHORT[t.id];
 
-  const sway = Math.abs(v.sway) < 2 ? 'Upright' : `Sway ${deg(v.sway)} to your ${v.sway > 0 ? 'right' : 'left'}`;
+  const sway = swayDeg === 0 ? 'Sway 0°' : `Sway ${swayDeg}° ${v.sway > 0 ? 'right' : 'left'}`;
   return { banner: { text, tone, instruction, detail }, tiles, sway, mode: v.mode === 'full' ? 'Full body' : 'Torso only' };
 }
