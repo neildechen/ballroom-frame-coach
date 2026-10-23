@@ -69,12 +69,18 @@ function label(ctx, p, text, color, px) {
   ctx.restore();
 }
 
+const isFault = (s) => !['ok', 'untracked', 'off', 'level-line', undefined].includes(s);
 const stateColor = (s) => (s === 'ok' ? COLORS.ok : s === 'untracked' || s === 'off' || s === 'level-line' ? COLORS.muted : COLORS.fault);
 const fmtDeg = (d) => `${d >= 0 ? '+' : '−'}${Math.abs(d).toFixed(0)}°`;
 
-export function drawOverlay(ctx, { rect, aspect, mirror, verdict, dpr = 1 }) {
+// quiet (Glance look): only faults draw at full strength; everything correct
+// or reference-only is drawn faint and thin so the eye goes to the problem.
+export function drawOverlay(ctx, { rect, aspect, mirror, verdict, dpr = 1, quiet = false }) {
   const m = verdict?.measurement;
   if (!m?.tracked) return;
+  ctx.save();
+  const calm = (state) => { ctx.globalAlpha = quiet && !isFault(state) ? 0.45 : 1; };
+  const wq = (state, w) => (quiet && !isFault(state) ? w * 0.6 : w);
   const P = m.points, F = m.frame;
   const map = makeMapper(rect, aspect, mirror);
   const k = Math.max(1, rect.h / 720) * dpr; // stroke scale
@@ -84,10 +90,12 @@ export function drawOverlay(ctx, { rect, aspect, mirror, verdict, dpr = 1 }) {
 
   // Reference: body axis from the hips up to S (full; the head target carries it on
   // above S) and the sway-adjusted horizontal through S.
+  calm('ok');
   if (m.mode === 'full') line(ctx, map(mid(P.LH, P.RH)), map(S), COLORS.guide, 2 * k, [8 * k, 8 * k]);
   line(ctx, map(add(S, scale(F.hL, -reach * 1.15))), map(add(S, scale(F.hL, reach * 1.15))), COLORS.guide, 2 * k, [8 * k, 8 * k]);
 
   // Shoulder line (the reference itself in torso mode).
+  calm(verdict.shoulder.state);
   const sc = m.mode === 'torso' ? COLORS.guide : verdict.shoulder.state === 'ok' ? COLORS.muted : stateColor(verdict.shoulder.state);
   line(ctx, map(P.LS), map(P.RS), sc, 3 * k);
 
@@ -95,28 +103,34 @@ export function drawOverlay(ctx, { rect, aspect, mirror, verdict, dpr = 1 }) {
   for (const [E, side, dir] of [[P.LE, verdict.left, F.hL], [P.RE, verdict.right, scale(F.hL, -1)]]) {
     if (!E) continue;
     const c = stateColor(side.state);
-    line(ctx, map(S), map(E), c, 8 * k);
-    dot2(ctx, map(E), 8 * k, c);
+    calm(side.state);
+    line(ctx, map(S), map(E), c, wq(side.state, 8 * k));
+    dot2(ctx, map(E), wq(side.state, 8 * k), c);
     const tag = add(E, add(scale(dir, reach * 0.12), scale(F.u, reach * 0.14)));
     label(ctx, map(tag), fmtDeg(side.elev), c, 22 * k);
   }
+  calm('ok');
   dot2(ctx, map(S), 6 * k, COLORS.guide);
 
   // Head: ring at the head centre, face axis, and the target: the body axis carried up from S.
   if (P.C) {
     const r = len(sub(P.LS, P.RS)) * 0.38;
     const tilt = verdict.head.tilt, shift = verdict.head.shift;
+    calm(shift);
     const up = dot(sub(P.C, S), F.u);
     const target = add(S, scale(F.u, up));
     line(ctx, map(S), map(add(S, scale(F.u, up + r * 1.4))), stateColor(shift), 2.5 * k, [5 * k, 7 * k]);
     if (shift === 'left' || shift === 'right') line(ctx, map(target), map(P.C), COLORS.fault, 3 * k);
     ring(ctx, map(P.C), r * rect.h, stateColor(shift), 3 * k); // world units are image heights
     if (P.faceAxis) {
+      calm(tilt);
       const a = map(add(P.C, scale(P.faceAxis, -r * 1.25)));
       const b = map(add(P.C, scale(P.faceAxis, r * 1.25)));
       line(ctx, a, b, stateColor(tilt), 4 * k);
     }
   }
+
+  ctx.restore();
 
   // Screen-edge bars on whichever side of the screen a dropping elbow appears.
   ctx.save();
@@ -134,18 +148,18 @@ export function drawOverlay(ctx, { rect, aspect, mirror, verdict, dpr = 1 }) {
 }
 
 // Stick figure for demo mode (the camera feed stands in for this normally).
-export function drawStickFigure(ctx, { rect, aspect, mirror, pose, face, dpr = 1 }) {
+export function drawStickFigure(ctx, { rect, aspect, mirror, pose, face, dpr = 1, color = 'rgba(160, 170, 200, 0.35)' }) {
   const map = (lm) => ({ x: rect.x + (mirror ? 1 - lm.x : lm.x) * rect.w, y: rect.y + lm.y * rect.h });
   const k = Math.max(1, rect.h / 720) * dpr;
   ctx.save();
-  ctx.strokeStyle = 'rgba(160, 170, 200, 0.35)';
+  ctx.strokeStyle = color;
   ctx.lineWidth = 14 * k;
   ctx.lineCap = 'round';
   const seg = (a, b) => { ctx.beginPath(); ctx.moveTo(map(pose[a]).x, map(pose[a]).y); ctx.lineTo(map(pose[b]).x, map(pose[b]).y); ctx.stroke(); };
   seg(11, 12); seg(11, 13); seg(12, 14); seg(11, 23); seg(12, 24); seg(23, 24);
   const c = map({ x: (pose[7].x + pose[8].x) / 2, y: (pose[7].y + pose[8].y) / 2 });
   const r = Math.abs(map(pose[7]).x - map(pose[8]).x) / 2 + 0.02 * rect.h;
-  ctx.fillStyle = 'rgba(160, 170, 200, 0.25)';
+  ctx.fillStyle = color;
   ctx.beginPath(); ctx.arc(c.x, c.y, Math.max(r, 0.08 * rect.h), 0, Math.PI * 2); ctx.fill();
   if (face) {
     ctx.fillStyle = 'rgba(220, 225, 240, 0.7)';

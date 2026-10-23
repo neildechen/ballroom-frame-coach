@@ -4,6 +4,7 @@ const deg = (d) => `${Math.abs(d).toFixed(0)}°`;
 const side = (dir) => (dir === 'left' ? 'left' : 'right');
 
 const OFF = (id, label) => ({ id, label, value: 'Turned off', tone: 'idle' });
+const SHORT = { left: 'Left', right: 'Right', headTilt: 'Tilt', headPos: 'Head', shoulders: 'Shoulders' };
 
 function sideTile(id, name, s) {
   if (s.state === 'off') return OFF(id, name);
@@ -15,7 +16,7 @@ function sideTile(id, name, s) {
 export function feedback(v) {
   if (!v?.tracked) {
     return {
-      banner: { text: 'Step into view so both shoulders and elbows are visible', tone: 'idle' },
+      banner: { text: 'Step into view so both shoulders and elbows are visible', tone: 'idle', instruction: 'Step into view', detail: 'Both shoulders and elbows need to be in the picture' },
       tiles: [],
       sway: '',
       mode: '',
@@ -48,15 +49,29 @@ export function feedback(v) {
 
   const headOff = h.tilt === 'off' && h.shift === 'off';
   const clear = headOff ? 'Frame level' : 'Frame level, head centred';
-  let text = clear, tone = 'ok';
-  if (v.umbrella) text = 'Both sides dropping';
-  else if (v.left.state === 'drop') text = 'Left side dropping';
-  else if (v.right.state === 'drop') text = 'Right side dropping';
-  else if (h.tilt === 'left' || h.tilt === 'right') text = `Head tilted to your ${h.tilt}`;
-  else if (h.shift === 'left' || h.shift === 'right') text = `Head drifting to your ${h.shift}`;
-  else if (v.shoulder.state === 'left' || v.shoulder.state === 'right') text = `${v.shoulder.state === 'left' ? 'Left' : 'Right'} shoulder dropping`;
+  // text: the plain finding (Studio). instruction + detail: what to do about it (Glance).
+  let text = clear, tone = 'ok', instruction = clear, detail = '';
+  const other = (d) => (d === 'left' ? 'right' : 'left');
+  if (v.umbrella) {
+    text = 'Both sides dropping'; instruction = 'Lift both elbows';
+    detail = `Left ${deg(v.left.elev)} and right ${deg(v.right.elev)} below your level line`;
+  } else if (v.left.state === 'drop' || v.right.state === 'drop') {
+    const s = v.left.state === 'drop' ? 'left' : 'right';
+    text = `${s === 'left' ? 'Left' : 'Right'} side dropping`; instruction = `Lift the ${s} elbow`;
+    detail = `${deg(v[s].elev)} below your level line`;
+  } else if (h.tilt === 'left' || h.tilt === 'right') {
+    text = `Head tilted to your ${h.tilt}`; instruction = 'Tilt your head with the sway';
+    detail = `${deg(h.roll)} off, toward your ${h.tilt}`;
+  } else if (h.shift === 'left' || h.shift === 'right') {
+    text = `Head drifting to your ${h.shift}`; instruction = `Bring your head back to your ${other(h.shift)}`;
+    detail = `It sits off centre to your ${h.shift}`;
+  } else if (v.shoulder.state === 'left' || v.shoulder.state === 'right') {
+    text = `${v.shoulder.state === 'left' ? 'Left' : 'Right'} shoulder dropping`; instruction = `Lift the ${v.shoulder.state} shoulder`;
+    detail = `${deg(v.shoulder.tilt)} low against your body`;
+  }
   if (text !== clear) tone = 'fault';
+  for (const t of tiles) t.short = SHORT[t.id];
 
   const sway = Math.abs(v.sway) < 2 ? 'Upright' : `Sway ${deg(v.sway)} to your ${v.sway > 0 ? 'right' : 'left'}`;
-  return { banner: { text, tone }, tiles, sway, mode: v.mode === 'full' ? 'Full body' : 'Torso only' };
+  return { banner: { text, tone, instruction, detail }, tiles, sway, mode: v.mode === 'full' ? 'Full body' : 'Torso only' };
 }

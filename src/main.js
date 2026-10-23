@@ -18,6 +18,8 @@ const DEFAULTS = {
   mirror: true,
   rear: false,
   lite: false,
+  theme: 'light', // 'light' | 'dark'
+  look: 'studio', // 'studio' | 'glance'
   checks: { ...DEFAULT_CHECKS },
   tol: { frameDeg: DEFAULT_TOLERANCES.frameDeg, headRollDeg: DEFAULT_TOLERANCES.headRollDeg, headOffset: DEFAULT_TOLERANCES.headOffset, shoulderDeg: DEFAULT_TOLERANCES.shoulderDeg },
 };
@@ -107,18 +109,20 @@ function startDemo() {
 
 // ---- HUD --------------------------------------------------------------------
 let lastBanner = '';
-function setBanner(text, tone) {
-  const key = tone + text;
+function setBanner(text, tone, detail = '') {
+  const key = tone + text + detail;
   if (key === lastBanner) return;
   lastBanner = key;
   const b = $('#banner');
-  b.textContent = text;
+  b.querySelector('.main').textContent = text;
+  b.querySelector('.sub').textContent = detail;
   b.className = `banner ${tone}`;
 }
 
 let lastTiles = '';
 function renderHud(f) {
-  setBanner(f.banner.text, f.banner.tone);
+  const glance = settings.look === 'glance';
+  setBanner(glance ? f.banner.instruction : f.banner.text, f.banner.tone, glance ? f.banner.detail : '');
   const modeChip = $('#mode-chip');
   modeChip.textContent = f.mode || 'Looking for you';
   const sway = $('#sway-chip');
@@ -134,7 +138,9 @@ function renderHud(f) {
     el.dataset.id = t.id;
     const k = document.createElement('span'); k.className = 'k'; k.textContent = t.label;
     const v = document.createElement('span'); v.className = 'v'; v.textContent = t.value;
-    el.append(k, v);
+    const s = document.createElement('span'); s.className = 's'; s.textContent = t.short;
+    el.title = `${t.label}: ${t.value}`;
+    el.append(k, v, s);
     return el;
   }));
 }
@@ -151,7 +157,7 @@ let frames = 0, fpsT = performance.now();
 function tick() {
   const t = performance.now();
   const dpr = fitCanvas();
-  ctx.fillStyle = '#0d0f17';
+  ctx.fillStyle = palette.stage;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   let input = null, aspect = 16 / 9;
@@ -169,12 +175,12 @@ function tick() {
     aspect = input.aspect;
     const c = $('#caption');
     if (c.textContent !== d.caption) c.textContent = d.caption;
-    drawStickFigure(ctx, { rect: contentRect(canvas.width, canvas.height, aspect), aspect, mirror: settings.mirror, pose: input.pose, face: input.face, dpr });
+    drawStickFigure(ctx, { rect: contentRect(canvas.width, canvas.height, aspect), aspect, mirror: settings.mirror, pose: input.pose, face: input.face, dpr, color: palette.figure });
   }
 
   if (input) {
     const verdict = session.update({ ...input, t });
-    drawOverlay(ctx, { rect: contentRect(canvas.width, canvas.height, aspect), aspect, mirror: settings.mirror, verdict, dpr });
+    drawOverlay(ctx, { rect: contentRect(canvas.width, canvas.height, aspect), aspect, mirror: settings.mirror, verdict, dpr, quiet: settings.look === 'glance' });
     renderHud(feedback(verdict));
     frames++;
     if (t - fpsT > 1000) {
@@ -197,6 +203,8 @@ const sliders = [
 
 function syncSettingsForm() {
   $(`#mode-${settings.mode}`).checked = true;
+  $(`#theme-${settings.theme}`).checked = true;
+  $(`#look-${settings.look}`).checked = true;
   $('#mirror').checked = settings.mirror;
   $('#rear').checked = settings.rear;
   $('#lite').checked = settings.lite;
@@ -207,7 +215,21 @@ function syncSettingsForm() {
   }
 }
 
+// Theme and look live on <html>; the canvas reads its two colours from the theme.
+const palette = { stage: '#e3e5e9', figure: 'rgba(70, 78, 96, 0.35)' };
+function applyAppearance() {
+  const root = document.documentElement;
+  root.dataset.theme = settings.theme;
+  root.dataset.look = settings.look;
+  const css = getComputedStyle(root);
+  palette.stage = css.getPropertyValue('--stage').trim() || palette.stage;
+  palette.figure = css.getPropertyValue('--figure').trim() || palette.figure;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', css.getPropertyValue('--panel').trim());
+  lastBanner = ''; // re-render the banner in the new look
+}
+
 function applySettings() {
+  applyAppearance();
   session.setTolerances(settings.tol);
   session.setTracking({ mode: settings.mode });
   session.setChecks(settings.checks);
@@ -226,6 +248,8 @@ $('#reset-settings').addEventListener('click', () => {
   syncSettingsForm();
   applySettings();
 });
+$('#theme-seg').addEventListener('change', (e) => { settings.theme = e.target.value; applySettings(); });
+$('#look-seg').addEventListener('change', (e) => { settings.look = e.target.value; applySettings(); });
 $('#mode-seg').addEventListener('change', (e) => { settings.mode = e.target.value; applySettings(); });
 $('#mirror').addEventListener('change', (e) => { settings.mirror = e.target.checked; applySettings(); });
 $('#rear').addEventListener('change', async (e) => {
@@ -255,5 +279,6 @@ $('#start-camera').addEventListener('click', startCamera);
 $('#start-demo').addEventListener('click', startDemo);
 
 syncSettingsForm();
+applyAppearance();
 if (location.hash === '#demo') startDemo();
 requestAnimationFrame(tick);

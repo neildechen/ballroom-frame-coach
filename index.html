@@ -3,29 +3,39 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0d0f17">
+<meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Frame Coach</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%230d0f17%22/%3E%3Cpath d=%22M5 15 L16 13 L27 15%22 stroke=%22%233ddc97%22 stroke-width=%224%22 stroke-linecap=%22round%22 fill=%22none%22/%3E%3Ccircle cx=%2216%22 cy=%2222%22 r=%223%22 fill=%22%23f2c14e%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="app.css">
+<script>
+  // Theme and look before first paint (light and studio by default).
+  try {
+    const s = JSON.parse(localStorage.getItem('frame-coach-settings-v2') || 'null');
+    document.documentElement.dataset.theme = s?.theme === 'dark' ? 'dark' : 'light';
+    document.documentElement.dataset.look = s?.look === 'glance' ? 'glance' : 'studio';
+  } catch { document.documentElement.dataset.theme = 'light'; }
+</script>
 </head>
 <body>
 <main id="stage">
   <video id="video" playsinline muted></video>
-  <canvas id="canvas"></canvas>
 
-  <header class="bar">
-    <span class="chip" id="mode-chip">Frame Coach</span>
-    <span class="chip" id="sway-chip" hidden></span>
-    <span class="spacer"></span>
-    <span class="chip quiet" id="fps" hidden></span>
-    <button class="icon" id="settings-btn" aria-label="Settings" aria-expanded="false">Settings</button>
+  <header class="top">
+    <div class="bar">
+      <span class="cell" id="mode-chip">Frame Coach</span>
+      <span class="cell" id="sway-chip" hidden></span>
+      <span class="spacer"></span>
+      <span class="cell quiet" id="fps" hidden></span>
+      <button class="bar-btn" id="settings-btn" aria-label="Settings" aria-expanded="false">Settings</button>
+    </div>
+    <p id="caption" class="caption" hidden></p>
   </header>
 
-  <p id="caption" class="caption" hidden></p>
+  <canvas id="canvas"></canvas>
 
   <footer class="dock">
-    <p id="banner" class="banner idle" role="status" aria-live="polite"></p>
+    <div id="banner" class="banner idle" role="status" aria-live="polite"><span class="main"></span><span class="sub"></span></div>
     <section id="tiles" class="tiles" aria-label="Readings"></section>
   </footer>
 
@@ -47,6 +57,18 @@
 
   <section id="settings" class="sheet settings" hidden aria-label="Settings">
     <h2>Settings</h2>
+    <fieldset>
+      <legend>Appearance</legend>
+      <div class="seg" role="radiogroup" id="theme-seg" aria-label="Theme">
+        <label><input type="radio" name="theme" value="light" id="theme-light"> Light</label>
+        <label><input type="radio" name="theme" value="dark" id="theme-dark"> Dark</label>
+      </div>
+      <div class="seg" role="radiogroup" id="look-seg" aria-label="Look">
+        <label><input type="radio" name="look" value="studio" id="look-studio"> Studio</label>
+        <label><input type="radio" name="look" value="glance" id="look-glance"> Glance</label>
+      </div>
+      <p class="hint">Studio shows every reading. Glance shows one large instruction you can read from across the room, and fades whatever is correct.</p>
+    </fieldset>
     <fieldset>
       <legend>View</legend>
       <div class="seg" role="radiogroup" id="mode-seg">

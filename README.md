@@ -18,7 +18,7 @@ Everything runs in the browser. Video never leaves the device, and nothing is re
 | Head position | The head centre (between the ears) sits on the body axis carried up through the shoulder midpoint | 40% of half the shoulder width |
 | Shoulders (full body only) | The shoulder line stays square to the body axis | 4° |
 
-Turning the head to the left, as Standard hold asks, is ignored. All tolerances can be changed in Settings, and each check can be switched off there (all are on by default).
+Turning the head to the left, as Standard hold asks, is ignored. All tolerances can be changed in Settings, and each check can be switched off there (all are on by default). Settings also has a light or dark theme (light by default) and two looks: Studio, with every reading, and Glance, with one large instruction readable from across the room.
 
 ## How sway is handled
 

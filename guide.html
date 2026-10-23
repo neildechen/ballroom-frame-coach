@@ -3,23 +3,38 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0d0f17">
+<meta name="theme-color" content="#ffffff">
+<script>
+  // Theme and look before first paint (light and studio by default).
+  try {
+    const s = JSON.parse(localStorage.getItem('frame-coach-settings-v2') || 'null');
+    document.documentElement.dataset.theme = s?.theme === 'dark' ? 'dark' : 'light';
+    document.documentElement.dataset.look = s?.look === 'glance' ? 'glance' : 'studio';
+  } catch { document.documentElement.dataset.theme = 'light'; }
+</script>
 <title>Frame Coach Guide</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%230d0f17%22/%3E%3Cpath d=%22M5 15 L16 13 L27 15%22 stroke=%22%233ddc97%22 stroke-width=%224%22 stroke-linecap=%22round%22 fill=%22none%22/%3E%3Ccircle cx=%2216%22 cy=%2222%22 r=%223%22 fill=%22%23f2c14e%22/%3E%3C/svg%3E">
 <style>
-/* Reading page in the app's dark look. Single column, ~65ch measure. */
+/* Reading page in the app's look: light by default, dark when the app is set to dark.
+   Single column, ~65ch measure. */
 :root {
-  color-scheme: dark;
-  --ink: #0d0f17;
-  --card: #151927;
-  --line: rgba(235, 238, 245, 0.14);
-  --text: #e6e8f0;
-  --dim: #a3a9bd;
-  --ok: #3ddc97;
-  --fault: #ff4d5e;
-  --guide: #f2c14e;
-  --font: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+  --ink: #f4f5f7;
+  --card: #ffffff;
+  --line: #d7dae0;
+  --text: #15171c;
+  --dim: #5d6470;
+  --ok: #0b8a5f;
+  --on-ok: #ffffff;
+  --fault: #d6354a;
+  --guide: #9a6f00;
+  --font: -apple-system, "SF Pro Text", system-ui, "Segoe UI", Roboto, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, monospace;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #0d0f17; --card: #151927; --line: rgba(235, 238, 245, 0.14); --text: #e6e8f0; --dim: #a3a9bd;
+  --ok: #3ddc97; --on-ok: #06210f; --fault: #ff4d5e; --guide: #f2c14e;
 }
 * { box-sizing: border-box; }
 html { background: var(--ink); }
@@ -32,7 +47,7 @@ body {
 }
 main { max-width: 68ch; margin: 0 auto; display: grid; gap: 8px; }
 h1 { font-size: clamp(30px, 6vw, 40px); line-height: 1.1; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
-h1::after { content: ""; display: block; width: 56px; height: 4px; margin-top: 12px; border-radius: 2px; background: linear-gradient(90deg, var(--ok) 0 50%, var(--guide) 50% 100%); }
+h1::after { content: ""; display: block; width: 56px; height: 4px; margin-top: 12px; background: linear-gradient(90deg, var(--ok) 0 50%, var(--guide) 50% 100%); }
 h2 { font-size: 22px; margin: 32px 0 4px; letter-spacing: -0.01em; text-wrap: balance; scroll-margin-top: 16px; }
 h3 { font-size: 17px; margin: 18px 0 0; }
 p, ul, ol { margin: 6px 0; }
@@ -42,21 +57,21 @@ a:focus-visible { outline: 2px solid var(--guide); outline-offset: 2px; border-r
 .lede { color: var(--dim); font-size: 18px; margin-top: 14px; }
 .links { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 18px 0 6px; padding: 0; list-style: none; }
 .links a {
-  display: grid; gap: 2px; padding: 14px 16px; border-radius: 12px; text-decoration: none;
+  display: grid; gap: 2px; padding: 14px 16px; border-radius: 3px; text-decoration: none;
   background: var(--card); border: 1px solid var(--line); color: var(--text);
 }
 .links a strong { color: var(--ok); font-size: 17px; }
 .links a span { color: var(--dim); font-size: 14px; line-height: 1.4; }
 .links a.primary { background: var(--ok); border-color: var(--ok); }
-.links a.primary strong, .links a.primary span { color: #06210f; }
-.note { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--guide); border-radius: 10px; padding: 12px 16px; margin: 10px 0; }
+.links a.primary strong, .links a.primary span { color: var(--on-ok); }
+.note { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--guide); border-radius: 3px; padding: 12px 16px; margin: 10px 0; }
 .note p { margin: 0; }
 code, kbd { font: 15px var(--mono); background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; }
 .legend { display: grid; gap: 12px; margin: 10px 0; padding: 0; list-style: none; }
 .legend li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 14px; align-items: center; }
-.legend svg { width: 64px; height: 36px; display: block; }
+.legend svg { width: 64px; height: 36px; display: block; background: #2a2d34; } /* the overlay draws over the camera picture */
 .shot { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 18px; align-items: start; margin: 12px 0; }
-.shot img { width: 100%; height: auto; max-width: 100%; border-radius: 14px; border: 1px solid var(--line); display: block; }
+.shot img { width: 100%; height: auto; max-width: 100%; border-radius: 3px; border: 1px solid var(--line); display: block; }
 .shot figcaption { color: var(--dim); font-size: 15px; }
 @media (max-width: 520px) { .shot { grid-template-columns: 1fr; } .shot img { max-width: 260px; } }
 .table-wrap { overflow-x: auto; }
@@ -119,7 +134,7 @@ footer { color: var(--dim); font-size: 14px; margin-top: 36px; border-top: 1px s
     <li><svg viewBox="0 0 64 36" aria-hidden="true"><line x1="32" y1="34" x2="32" y2="2" stroke="#3ddc97" stroke-width="3" stroke-dasharray="4 5" stroke-linecap="round"/><circle cx="32" cy="34" r="3" fill="#3ddc97"/></svg>
       <span><strong>Dashed upright line rising from the middle of your shoulders:</strong> your body axis carried up, where the centre of your head should sit. It leans with your sway. A solid red line joins it to your head when you drift.</span></li>
   </ul>
-  <p>The banner at the bottom names the most important problem at that moment, in this order: both sides dropping, one side dropping, head tilt, head drifting, shoulder dropping. The tiles under it give each check's reading. Left and right always mean your own left and right.</p>
+  <p>The banner at the bottom names the most important problem at that moment, in this order: both sides dropping, one side dropping, head tilt, head drifting, shoulder dropping. The readings under it give each check's result (in the Glance look, a row of five marks). Left and right always mean your own left and right.</p>
   <p>A fault has to last about 0.15 seconds before it shows, and it clears once you are back inside the tolerance with a little margin. Brief wobbles and tracking jitter do not show.</p>
 
   <h2 id="practice">Using it in practice</h2>
@@ -137,6 +152,8 @@ footer { color: var(--dim); font-size: 14px; margin-top: 36px; border-top: 1px s
     <thead><tr><th>Setting</th><th>What it does</th><th>Default</th></tr></thead>
     <tbody>
       <tr><td>View</td><td>Auto picks full body when the hips are visible and torso otherwise. Pick one to stop it switching.</td><td>Auto</td></tr>
+      <tr><td>Theme</td><td>Light or dark panels, settings and guide. The camera picture is the same in both.</td><td>Light</td></tr>
+      <tr><td>Look</td><td>Studio shows every reading in the bottom panel. Glance shows one large instruction, such as "Lift the left elbow", with a row of five status marks, and fades the parts of the overlay that are correct so a fault stands out from across the room.</td><td>Studio</td></tr>
       <tr><td>Checks</td><td>Switch any of the five checks off. A switched-off check reads "Turned off", stays grey on screen and never reaches the banner.</td><td>All on</td></tr>
       <tr><td>Mirror image</td><td>Shows the picture like a mirror.</td><td>On</td></tr>
       <tr><td>Use rear camera</td><td>Sharper picture, but you cannot see the screen unless someone holds the phone. Turns mirroring off.</td><td>Off</td></tr>

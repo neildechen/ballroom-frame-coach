@@ -61,3 +61,20 @@ test('switched-off checks read "Turned off" and never reach the banner', () => {
   assert.equal(f.banner.tone, 'ok');
   assert.equal(f.banner.text, 'Frame level');
 });
+
+test('each finding comes with an instruction for the Glance look', () => {
+  const cases = [
+    [{ left: { elev: -9, state: 'drop' } }, 'Lift the left elbow', '9° below your level line'],
+    [{ left: { elev: -8, state: 'drop' }, right: { elev: -7, state: 'drop' }, umbrella: true }, 'Lift both elbows', 'Left 8° and right 7° below your level line'],
+    [{ head: { roll: 12, offset: 0, source: 'face', tilt: 'left', shift: 'ok' } }, 'Tilt your head with the sway', '12° off, toward your left'],
+    [{ head: { roll: 0, offset: 0.6, source: 'face', tilt: 'ok', shift: 'left' } }, 'Bring your head back to your right', 'It sits off centre to your left'],
+    [{ shoulder: { tilt: 6, state: 'right' } }, 'Lift the right shoulder', '6° low against your body'],
+    [{}, 'Frame level, head centred', ''],
+  ];
+  for (const [o, instruction, detail] of cases) {
+    const b = feedback(v(o)).banner;
+    assert.equal(b.instruction, instruction);
+    assert.equal(b.detail, detail);
+  }
+  assert.deepEqual(feedback(v()).tiles.map((t) => t.short), ['Left', 'Right', 'Tilt', 'Head', 'Shoulders']);
+});
