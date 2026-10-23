@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { measure, chooseMode } from '../src/analyze.js';
-import { POSE } from '../src/landmarks.js';
+import { POSE, FACE_PAIRS } from '../src/landmarks.js';
 import { makeDancer, imageAngle } from './fixtures.js';
 
 const close = (a, b, eps, msg) => assert.ok(Math.abs(a - b) <= eps, `${msg ?? ''} expected ${b}, got ${a}`);
@@ -57,6 +57,17 @@ test('head roll is measured relative to the body and ignores head turn and nod',
     const m = run({ sway: 12, headRoll: 6, headYaw: yaw, headPitch: pitch });
     close(m.headRoll, 6, 1e-6, `yaw ${yaw} pitch ${pitch}`);
   }
+});
+
+test('the pupil line counts toward head tilt, and gaze does not move it', () => {
+  for (const [gx, gy] of [[0, 0], [0.012, 0], [-0.012, 0.006]]) {
+    const m = run({ sway: -14, headRoll: 7, headYaw: 20, gazeX: gx, gazeY: gy });
+    close(m.headRoll, 7, 1e-6, `gaze ${gx},${gy}`);
+  }
+  // Pupils alone (every other face pair missing) still give the axis.
+  const d = makeDancer({ sway: 9, headRoll: -6 });
+  for (const [l, r] of FACE_PAIRS.slice(0, -1)) { d.face[l] = undefined; d.face[r] = undefined; }
+  close(measure(d).headRoll, -6, 1e-6, 'pupils only');
 });
 
 test('head offset is a fraction of half the shoulder width, measured from the body axis along body-horizontal', () => {

@@ -44,7 +44,7 @@ test('sway reads in plain words', () => {
 });
 
 test('torso mode explains the shoulder reference instead of judging it', () => {
-  const f = feedback(v({ mode: 'torso', shoulder: { tilt: null, state: 'off' } }));
+  const f = feedback(v({ mode: 'torso', shoulder: { tilt: null, state: 'level-line' } }));
   assert.equal(f.mode, 'Torso only');
   assert.equal(f.tiles.find((t) => t.id === 'shoulders').value, 'Used as the level line');
 });
@@ -53,4 +53,11 @@ test('nobody in view asks the dancer to step in', () => {
   const f = feedback({ tracked: false });
   assert.equal(f.banner.tone, 'idle');
   assert.match(f.banner.text, /shoulders and elbows/);
+});
+
+test('switched-off checks read "Turned off" and never reach the banner', () => {
+  const f = feedback(v({ left: { elev: -9, state: 'off' }, head: { roll: 9, offset: 0, source: 'face', tilt: 'off', shift: 'off' }, shoulder: { tilt: 0, state: 'off' } }));
+  for (const id of ['left', 'headTilt', 'headPos', 'shoulders']) assert.equal(f.tiles.find((t) => t.id === id).value, 'Turned off', id);
+  assert.equal(f.banner.tone, 'ok');
+  assert.equal(f.banner.text, 'Frame level');
 });

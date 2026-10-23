@@ -45,6 +45,8 @@ export const DEFAULT_DANCER = {
   headRoll: 0, // deg relative to the body; + = head tilted to the dancer's right
   headYaw: 0, // deg; + = face turned toward the dancer's left
   headPitch: 0,
+  gazeX: 0, // pupils' shift in the eye, head-local units; + = looking to the dancer's left
+  gazeY: 0,
   headOffset: 0, // fraction of half the shoulder width; + = toward the dancer's left
   size: 1, // multiplies every body length below
   armReach: 0.3, // shoulder midpoint to elbow, in image heights
@@ -111,9 +113,11 @@ export function makeDancer(overrides = {}) {
   if (p.faceVisible) {
     const c = place(C);
     face = Array.from({ length: FACE_COUNT }, () => ({ x: c.x, y: c.y, z: 0 }));
+    const pupils = [[0.03 + p.gazeX, 0.02 + p.gazeY, 0.078], [-0.03 + p.gazeX, 0.02 + p.gazeY, 0.078]];
+    const local = [...FACE_LOCAL, pupils];
     FACE_PAIRS.forEach(([li, ri], k) => {
-      face[li] = { ...place(head(FACE_LOCAL[k][0])), z: 0 };
-      face[ri] = { ...place(head(FACE_LOCAL[k][1])), z: 0 };
+      face[li] = { ...place(head(local[k][0])), z: 0 };
+      face[ri] = { ...place(head(local[k][1])), z: 0 };
     });
   }
 

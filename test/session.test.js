@@ -72,3 +72,21 @@ test('tolerances can be changed live', () => {
   v = frames(s, { elevL: -2 }, 1033, 2000);
   assert.equal(v.left.state, 'drop');
 });
+
+test('a switched-off check never reports, and comes back when switched on', () => {
+  const s = new Session({ checks: { left: false, headTilt: false } });
+  const bad = { sway: 15, elevL: -9, headRoll: -9 };
+  let v = frames(s, bad, 0, 1500);
+  assert.equal(v.left.state, 'off');
+  assert.equal(v.head.tilt, 'off');
+  assert.equal(v.right.state, 'ok', 'other checks keep running');
+  s.setChecks({ left: true, headTilt: true });
+  v = frames(s, bad, 1533, 3000);
+  assert.equal(v.left.state, 'drop');
+  assert.equal(v.head.tilt, 'left');
+});
+
+test('every check is on by default', () => {
+  const v = frames(new Session(), { sway: 10 }, 0, 600);
+  for (const st of [v.left.state, v.right.state, v.shoulder.state, v.head.tilt, v.head.shift]) assert.equal(st, 'ok');
+});

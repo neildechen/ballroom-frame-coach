@@ -1,6 +1,6 @@
 // App shell: camera or demo source -> Session -> canvas overlay + HUD.
 
-import { Session } from './session.js';
+import { Session, DEFAULT_CHECKS } from './session.js';
 import { DEFAULT_TOLERANCES } from './rules.js';
 import { feedback } from './feedback.js';
 import { drawOverlay, drawStickFigure, contentRect } from './overlay.js';
@@ -18,6 +18,7 @@ const DEFAULTS = {
   mirror: true,
   rear: false,
   lite: false,
+  checks: { ...DEFAULT_CHECKS },
   tol: { frameDeg: DEFAULT_TOLERANCES.frameDeg, headRollDeg: DEFAULT_TOLERANCES.headRollDeg, headOffset: DEFAULT_TOLERANCES.headOffset, shoulderDeg: DEFAULT_TOLERANCES.shoulderDeg },
 };
 const KEY = 'frame-coach-settings-v2';
@@ -29,7 +30,7 @@ function loadSettings() {
       s = JSON.parse(localStorage.getItem('frame-coach-settings-v1') || 'null');
       if (s?.tol) delete s.tol.headOffset;
     }
-    return s ? { ...DEFAULTS, ...s, tol: { ...DEFAULTS.tol, ...s.tol } } : structuredClone(DEFAULTS);
+    return s ? { ...DEFAULTS, ...s, checks: { ...DEFAULTS.checks, ...s.checks }, tol: { ...DEFAULTS.tol, ...s.tol } } : structuredClone(DEFAULTS);
   } catch {
     return structuredClone(DEFAULTS);
   }
@@ -39,7 +40,7 @@ function saveSettings() {
 }
 const settings = loadSettings();
 
-const session = new Session({ tolerances: settings.tol, tracking: { mode: settings.mode } });
+const session = new Session({ tolerances: settings.tol, tracking: { mode: settings.mode }, checks: settings.checks });
 
 // ---- sources ------------------------------------------------------------------
 let source = null; // 'camera' | 'demo'
@@ -199,6 +200,7 @@ function syncSettingsForm() {
   $('#mirror').checked = settings.mirror;
   $('#rear').checked = settings.rear;
   $('#lite').checked = settings.lite;
+  for (const k of Object.keys(DEFAULT_CHECKS)) $(`#check-${k}`).checked = settings.checks[k];
   for (const [sel, key, fmt] of sliders) {
     $(sel).value = settings.tol[key];
     $(`${sel}-out`).textContent = fmt(settings.tol[key]);
@@ -208,6 +210,7 @@ function syncSettingsForm() {
 function applySettings() {
   session.setTolerances(settings.tol);
   session.setTracking({ mode: settings.mode });
+  session.setChecks(settings.checks);
   saveSettings();
 }
 
@@ -237,6 +240,9 @@ $('#lite').addEventListener('change', async (e) => {
   applySettings();
   if (source === 'camera') await loadTracker().catch(() => {});
 });
+for (const k of Object.keys(DEFAULT_CHECKS)) {
+  $(`#check-${k}`).addEventListener('change', (e) => { settings.checks[k] = e.target.checked; applySettings(); });
+}
 for (const [sel, key, fmt] of sliders) {
   $(sel).addEventListener('input', (e) => {
     settings.tol[key] = Number(e.target.value);

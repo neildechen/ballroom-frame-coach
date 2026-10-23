@@ -69,7 +69,7 @@ function label(ctx, p, text, color, px) {
   ctx.restore();
 }
 
-const stateColor = (s) => (s === 'ok' ? COLORS.ok : s === 'untracked' || s === 'off' ? COLORS.muted : COLORS.fault);
+const stateColor = (s) => (s === 'ok' ? COLORS.ok : s === 'untracked' || s === 'off' || s === 'level-line' ? COLORS.muted : COLORS.fault);
 const fmtDeg = (d) => `${d >= 0 ? '+' : '−'}${Math.abs(d).toFixed(0)}°`;
 
 export function drawOverlay(ctx, { rect, aspect, mirror, verdict, dpr = 1 }) {
@@ -109,7 +109,7 @@ export function drawOverlay(ctx, { rect, aspect, mirror, verdict, dpr = 1 }) {
     const up = dot(sub(P.C, S), F.u);
     const target = add(S, scale(F.u, up));
     line(ctx, map(S), map(add(S, scale(F.u, up + r * 1.4))), stateColor(shift), 2.5 * k, [5 * k, 7 * k]);
-    if (shift !== 'ok' && shift !== 'untracked') line(ctx, map(target), map(P.C), COLORS.fault, 3 * k);
+    if (shift === 'left' || shift === 'right') line(ctx, map(target), map(P.C), COLORS.fault, 3 * k);
     ring(ctx, map(P.C), r * rect.h, stateColor(shift), 3 * k); // world units are image heights
     if (P.faceAxis) {
       const a = map(add(P.C, scale(P.faceAxis, -r * 1.25)));

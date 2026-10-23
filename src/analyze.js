@@ -55,7 +55,7 @@ export function measure({ pose, face, aspect }, opts = {}) {
 
   let axis = null, headSource = null;
   if (face) {
-    axis = faceAxis(FACE_PAIRS.map(([l, r]) => [W(face[l]), W(face[r])]));
+    axis = faceAxis(FACE_PAIRS.filter(([l, r]) => face[l] && face[r]).map(([l, r]) => [W(face[l]), W(face[r])]));
     headSource = 'face';
   }
   if (!axis) {
