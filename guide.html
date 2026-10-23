@@ -114,9 +114,9 @@ footer { color: var(--dim); font-size: 14px; margin-top: 36px; border-top: 1px s
     <li>Light from the front works best. A top that contrasts with the wall, and sleeves that show the elbows, help the tracking.</li>
   </ul>
   <h3>Full body or torso</h3>
-  <p>With your hips in view you get all five checks. The app draws your spine as one smooth curve from the middle of your hips to the middle of your shoulders, leaving the pelvis square to it, and "level" is square to that curve at the top of your breastbone (the manubrium). With your pelvis level and your spine bent, the top leans about twice as far as the straight hips-to-shoulders line, so your frame has to tilt that much further to read level. When your whole body leans, pelvis included, there is no curve and the two agree. The gold label shows both numbers.</p>
+  <p>With your hips in view you get every check. The app draws your spine as one smooth curve from the middle of your hips to the middle of your shoulders, leaving the pelvis square to it, and "level" is square to that curve at the top of your breastbone (the manubrium). With your pelvis level and your spine bent, the top leans about twice as far as the straight hips-to-shoulders line, so your frame has to tilt that much further to read level. When your whole body leans, pelvis included, there is no curve and the two agree. The gold label shows both numbers.</p>
   <p>The app tells standing from sitting by your knees and says which at the top left. Standing, it reads your pelvis from your hips. Sitting, it takes your pelvis as upright, since the chair holds it, which assumes the phone is level. In a perfect hold, upper arms 90° from your sides, both arms read 0°.</p>
-  <p>Waist-up also works. The app then uses your shoulder line as level and drops the shoulder check. In this view it cannot tell a whole side dropping (shoulder and elbow together) from sway, so stand back far enough to show the hips when you can. The chip at the top left says which view is in use.</p>
+  <p>Waist-up also works. The app then uses your shoulder line as level, so the Shoulders reading has nothing to compare and says so. In this view it cannot tell a whole side dropping (shoulder and elbow together) from sway, so stand back far enough to show the hips when you can. The chip at the top left says which view is in use.</p>
 
   <h2 id="reading">Reading the screen</h2>
   <figure class="shot">
@@ -135,7 +135,8 @@ footer { color: var(--dim); font-size: 14px; margin-top: 36px; border-top: 1px s
     <li><svg viewBox="0 0 64 36" aria-hidden="true"><line x1="32" y1="34" x2="32" y2="2" stroke="#3ddc97" stroke-width="3" stroke-dasharray="4 5" stroke-linecap="round"/><circle cx="32" cy="34" r="3" fill="#3ddc97"/></svg>
       <span><strong>Dashed upright line rising from the middle of your shoulders:</strong> your body axis carried up, where the centre of your head should sit. It leans with your sway. A solid red line joins it to your head when you drift.</span></li>
   </ul>
-  <p>The banner at the bottom names the most important problem at that moment, in this order: both sides dropping, one side dropping, head tilt, head drifting, shoulder dropping. The readings under it give each check's result (in the Glance look, a row of five marks). Left and right always mean your own left and right.</p>
+  <p>The banner at the bottom names the most important problem at that moment, in this order: both sides dropping, one side dropping, head tilt, head drifting. The readings under it give each check's result (in the Glance look, a row of marks). Left and right always mean your own left and right.</p>
+  <p>Shoulders is information only and never turns red. It shows how far your shoulder line tilts against the modelled top of your spine. That number mixes real shoulder movement with the model's estimate of where your spine bends (see Limits), so it is not a fault on its own.</p>
   <p>A fault has to last about 0.15 seconds before it shows, and it clears once you are back inside the tolerance with a little margin. Brief wobbles and tracking jitter do not show.</p>
 
   <h2 id="practice">Using it in practice</h2>
@@ -155,14 +156,13 @@ footer { color: var(--dim); font-size: 14px; margin-top: 36px; border-top: 1px s
       <tr><td>View</td><td>Auto picks full body when the hips are visible and torso otherwise. Pick one to stop it switching.</td><td>Auto</td></tr>
       <tr><td>Theme</td><td>Light or dark panels, settings and guide. The camera picture is the same in both.</td><td>Light</td></tr>
       <tr><td>Look</td><td>Studio shows every reading in the bottom panel. Glance shows one large instruction, such as "Lift the left elbow", with a row of five status marks, and fades the parts of the overlay that are correct so a fault stands out from across the room.</td><td>Studio</td></tr>
-      <tr><td>Checks</td><td>Switch any of the five checks off. A switched-off check reads "Turned off", stays grey on screen and never reaches the banner.</td><td>All on</td></tr>
+      <tr><td>Checks</td><td>Switch any check off, including the Shoulders reading. A switched-off check reads "Turned off", stays grey on screen and never reaches the banner.</td><td>All on</td></tr>
       <tr><td>Mirror image</td><td>Shows the picture like a mirror.</td><td>On</td></tr>
       <tr><td>Use rear camera</td><td>Sharper picture, but you cannot see the screen unless someone holds the phone. Turns mirroring off.</td><td>Off</td></tr>
       <tr><td>Faster, less precise tracking</td><td>For older phones. Use it if the picture lags; on larger screens a frame-rate counter shows at the top.</td><td>Off</td></tr>
       <tr><td>Side may sit below level by</td><td>How far an elbow may sit below the level line before that side counts as dropping. 0° is the strict rule.</td><td class="num">3°</td></tr>
       <tr><td>Head tilt allowed</td><td>How far the head may tilt away from your sway.</td><td class="num">5°</td></tr>
       <tr><td>Head off centre allowed</td><td>How far the head centre may sit to one side of the body axis, as a share of half your shoulder width.</td><td class="num">40%</td></tr>
-      <tr><td>Shoulder tilt allowed</td><td>How far the shoulder line may tilt against your body axis (full body only).</td><td class="num">4°</td></tr>
     </tbody>
   </table>
   </div>
@@ -173,7 +173,7 @@ footer { color: var(--dim); font-size: 14px; margin-top: 36px; border-top: 1px s
     <li>Readings are reliable only while your chest faces the camera.</li>
     <li>It is built for practising alone. A partner in hold hides your elbows and their body.</li>
     <li>Elbows held forward or back look shorter on camera. Whether they read as above or below level stays correct.</li>
-    <li>A bend at the waist shows partly as sway. In full-body view the shoulder check picks up the rest.</li>
+    <li>The app draws your spine as one even curve. When your sway bends the spine mostly in one place, it misjudges the top. With a 10° bend centred at the diaphragm, the side you sway toward reads about 3° low; bent at the upper back, about 6°; bent low in the lumbar spine, the other side reads about 5° low. The elbows, the head and the Shoulders reading all share this error.</li>
     <li>Points the tracker is unsure of show as "not visible" and never as faults.</li>
   </ul>
 

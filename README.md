@@ -16,9 +16,11 @@ Everything runs in the browser. Video never leaves the device, and nothing is re
 | Both sides down | Flags the umbrella frame: both elbows slanting down | same |
 | Head tilt | The head's left-right axis (from the eye corners, pupils, mouth corners and cheeks) is parallel to the body's horizontal, so it tilts with the sway | 5° |
 | Head position | The head centre (between the ears) sits on the spine's direction carried up from the manubrium | 40% of half the shoulder width |
-| Shoulders (full body only) | The shoulder line stays square to the spine at the manubrium | 4° |
+| Shoulders (full body only) | Information only: the shoulder line's tilt against the spine at the manubrium. Never a fault (see Limits) | none |
 
 Turning the head to the left, as Standard hold asks, is ignored. All tolerances can be changed in Settings, and each check can be switched off there (all are on by default). Settings also has a light or dark theme (light by default) and two looks: Studio, with every reading, and Glance, with one large instruction readable from across the room.
+
+Auto view switches to full body only after the hips have been clearly visible for 0.3 seconds, and back to torso as soon as they are lost, so it does not flicker between the two.
 
 ## How sway is handled
 
@@ -28,7 +30,7 @@ Every angle is measured in the body's own coordinates, never against the screen.
   - **Standing:** the pelvis direction comes from the hip line.
   - **Sitting:** a chair holds the pelvis upright, so it is taken as vertical in the picture. This assumes the camera is level. The hip line is not used, which also makes sitting the steadier reading.
   - The app switches between the two from the knees: thighs hanging down (knees well below the hips) is standing, thighs pointing at the camera is sitting. A switch needs 0.7 s of agreement; with the knees out of view the last choice holds.
-- **Torso only** (hips out of view): the shoulder line is the level line, measured at the top of the manubrium. This mode cannot tell a whole side dropping together (shoulder and elbow) from sway, so the shoulder check is turned off.
+- **Torso only** (hips out of view): the shoulder line is the level line, measured at the top of the manubrium. This mode cannot tell a whole side dropping together (shoulder and elbow) from sway, and there is no shoulder reading.
 
 **The frame's anchor.** In a good Standard hold the upper arms are raised 90° from the side, so the elbows sit level with the shoulder joints and the line between them crosses the sternum at the shoulder midpoint's height, the top of the manubrium. That point is where each arm's angle is measured from, so a perfect frame reads 0° on both sides (`MANUBRIUM_DROP` in `src/geometry.js`).
 
@@ -39,7 +41,7 @@ Because only body-relative angles are used, results also do not change with came
 ## Limits
 
 - The camera should face the dancer. The app measures the plane facing the camera, so elbows held forward or back look shorter, though above-or-below level still reads correctly.
-- The curve is one even arc. A spine that bends mostly in one place (all at the waist, or all at the blades) is read as the even arc with the same ends, so the top angle is an estimate, not a measurement of the vertebrae.
+- The curve is one even arc. A spine that bends mostly in one place is read as the even arc with the same ends, so the top angle is an estimate. With a 10° bend the error is 0° when the bend is centred at mid-torso, about 3° (sway side reads low) at the diaphragm, 6° at the upper back, and 5° the other way low in the lumbar spine (`test/spine.test.js`, "known limit"). The elbows, the head and the shoulder reading share it, which is why the shoulder reading is information only.
 - Standing, every degree of error in the tracked hip line moves the elbow readings by a degree. MediaPipe's hip points are its least precise; smoothing helps, and the 3° tolerance covers some of it.
 - The arm angle is measured from the shoulder midpoint's height, the level of a 90° hold. An elbow held lower than the shoulder joint reads low by that much.
 - Tracking quality depends on light, clothing contrast and distance. Low-confidence points show as "not visible" and never as faults.

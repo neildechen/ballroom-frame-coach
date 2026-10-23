@@ -8,7 +8,7 @@ const ev = (m, tol) => evaluate({ ...base, ...m }, tol);
 test('defaults match the agreed design', () => {
   assert.deepEqual(
     { ...DEFAULT_TOLERANCES },
-    { frameDeg: 3, shoulderDeg: 4, headRollDeg: 5, headOffset: 0.4, hysteresisDeg: 1, hysteresisOffset: 0.08 },
+    { frameDeg: 3, headRollDeg: 5, headOffset: 0.4, hysteresisDeg: 1, hysteresisOffset: 0.08 },
   );
 });
 
@@ -38,9 +38,14 @@ test('head shift direction: positive offset is toward the dancer\'s left', () =>
   assert.equal(ev({ headOffset: 0.3 }).headShift.fault, false);
 });
 
-test('shoulder signal names the low side and is off in torso mode', () => {
+test('shoulder is information only: it names the low side but never faults', () => {
+  // Neil 2026-10-23: correct sways were flagged on the sway side. The shoulder line
+  // against the modelled top of the spine mixes real shoulder movement with the
+  // model's error for where the spine bends (test/spine.test.js), so it never faults.
   assert.equal(ev({ shoulderTilt: -5 }).shoulder.dir, 'left', 'left shoulder below body-horizontal');
   assert.equal(ev({ shoulderTilt: 5 }).shoulder.dir, 'right');
+  assert.equal(ev({ shoulderTilt: 15 }).shoulder.fault, false);
+  assert.equal(ev({ shoulderTilt: -15 }).shoulder.fault, false);
   assert.equal(ev({ mode: 'torso', shoulderTilt: null }).shoulder.value, null);
 });
 

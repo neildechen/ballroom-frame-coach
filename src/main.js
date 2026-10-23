@@ -21,7 +21,7 @@ const DEFAULTS = {
   theme: 'light', // 'light' | 'dark'
   look: 'studio', // 'studio' | 'glance'
   checks: { ...DEFAULT_CHECKS },
-  tol: { frameDeg: DEFAULT_TOLERANCES.frameDeg, headRollDeg: DEFAULT_TOLERANCES.headRollDeg, headOffset: DEFAULT_TOLERANCES.headOffset, shoulderDeg: DEFAULT_TOLERANCES.shoulderDeg },
+  tol: { frameDeg: DEFAULT_TOLERANCES.frameDeg, headRollDeg: DEFAULT_TOLERANCES.headRollDeg, headOffset: DEFAULT_TOLERANCES.headOffset },
 };
 const KEY = 'frame-coach-settings-v2';
 function loadSettings() {
@@ -198,7 +198,6 @@ const sliders = [
   ['#tol-frame', 'frameDeg', (v) => `${v}°`],
   ['#tol-roll', 'headRollDeg', (v) => `${v}°`],
   ['#tol-offset', 'headOffset', (v) => `${Math.round(v * 100)}% of half your shoulder width`],
-  ['#tol-shoulder', 'shoulderDeg', (v) => `${v}°`],
 ];
 
 function syncSettingsForm() {

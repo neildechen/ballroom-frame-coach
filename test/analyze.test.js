@@ -112,3 +112,13 @@ test('untracked: a low-confidence elbow yields null for that side only', () => {
   close(m.elevR, -9, 1e-6);
   close(m.headOffset, 0, 1e-6, 'offset does not need the elbows');
 });
+
+test('view hysteresis: hips must be clearly visible to enter full view, merely usable to stay', () => {
+  const at = (vis) => makeDancer({}).pose.map((lm, i) => (i === POSE.LEFT_HIP || i === POSE.RIGHT_HIP ? { ...lm, visibility: vis } : lm));
+  assert.equal(chooseMode(at(0.6), {}, 'torso'), 'torso', 'not enough to enter');
+  assert.equal(chooseMode(at(0.6), {}, 'full'), 'full', 'enough to stay');
+  assert.equal(chooseMode(at(0.75), {}, 'torso'), 'full');
+  assert.equal(chooseMode(at(0.45), {}, 'full'), 'torso');
+  assert.equal(chooseMode(makeDancer({ cy: 0.68 }).pose, {}, 'torso'), 'torso', 'hips at the very bottom edge: do not enter');
+  assert.equal(chooseMode(makeDancer({ cy: 0.68 }).pose, {}, 'full'), 'full', 'but stay if already in');
+});

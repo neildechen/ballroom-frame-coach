@@ -5,7 +5,7 @@ import { feedback } from '../src/feedback.js';
 const v = (o = {}) => ({
   tracked: true, mode: 'full', sway: 0,
   left: { elev: 1, state: 'ok' }, right: { elev: 2, state: 'ok' }, umbrella: false,
-  shoulder: { tilt: 0, state: 'ok' },
+  shoulder: { tilt: 0, state: 'info' },
   head: { roll: 0, offset: 0, source: 'face', tilt: 'ok', shift: 'ok' },
   ...o,
 });
@@ -76,7 +76,7 @@ test('each finding comes with an instruction for the Glance look', () => {
     [{ left: { elev: -8, state: 'drop' }, right: { elev: -7, state: 'drop' }, umbrella: true }, 'Lift both elbows', 'Left 8° and right 7° below your level line'],
     [{ head: { roll: 12, offset: 0, source: 'face', tilt: 'left', shift: 'ok' } }, 'Tilt your head with the sway', '12° off, toward your left'],
     [{ head: { roll: 0, offset: 0.6, source: 'face', tilt: 'ok', shift: 'left' } }, 'Bring your head back to your right', 'It sits off centre to your left'],
-    [{ shoulder: { tilt: 6, state: 'right' } }, 'Lift the right shoulder', '6° low against your body'],
+    [{ shoulder: { tilt: 6, state: 'info' } }, 'Frame level, head centred', ''],
     [{}, 'Frame level, head centred', ''],
   ];
   for (const [o, instruction, detail] of cases) {
@@ -93,4 +93,13 @@ test('a curved spine shows both the straight sway and the top lean', () => {
   assert.equal(f.mode, 'Standing');
   assert.equal(feedback(v({ sway: 10, top: 10.3 })).tiles.find((t) => t.id === 'sway').value, '10° to your right');
   assert.equal(feedback(v({ posture: 'sitting' })).mode, 'Sitting');
+});
+
+test('shoulder reading is neutral information and never reaches the banner', () => {
+  const f = feedback(v({ shoulder: { tilt: -6.2, state: 'info' } }));
+  const t = f.tiles.find((x) => x.id === 'shoulders');
+  assert.equal(t.value, 'Left side 6\u00b0 lower');
+  assert.equal(t.tone, 'info');
+  assert.equal(f.banner.text, 'Frame level, head centred');
+  assert.equal(feedback(v({ shoulder: { tilt: 1.2, state: 'info' } })).tiles.find((x) => x.id === 'shoulders').value, 'Square to the body');
 });

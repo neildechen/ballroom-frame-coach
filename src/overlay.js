@@ -84,8 +84,8 @@ function label(ctx, p, text, color, px) {
   ctx.restore();
 }
 
-const isFault = (s) => !['ok', 'untracked', 'off', 'level-line', undefined].includes(s);
-const stateColor = (s) => (s === 'ok' ? COLORS.ok : s === 'untracked' || s === 'off' || s === 'level-line' ? COLORS.muted : COLORS.fault);
+const isFault = (s) => !['ok', 'untracked', 'off', 'level-line', 'info', undefined].includes(s);
+const stateColor = (s) => (s === 'ok' ? COLORS.ok : s === 'untracked' || s === 'off' || s === 'level-line' || s === 'info' ? COLORS.muted : COLORS.fault);
 const fmtDeg = (d) => `${d >= 0 ? '+' : '−'}${Math.abs(d).toFixed(0)}°`;
 
 // quiet (Glance look): only faults draw at full strength; everything correct
@@ -119,7 +119,7 @@ export function drawOverlay(ctx, { rect, aspect, mirror, verdict, dpr = 1, quiet
 
   // Shoulder line (the reference itself in torso mode).
   calm(verdict.shoulder.state);
-  const sc = m.mode === 'torso' ? COLORS.guide : verdict.shoulder.state === 'ok' ? COLORS.muted : stateColor(verdict.shoulder.state);
+  const sc = m.mode === 'torso' ? COLORS.guide : COLORS.muted; // information only, never red
   line(ctx, map(P.LS), map(P.RS), sc, 3 * k);
 
   // Frame arms.

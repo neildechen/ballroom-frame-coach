@@ -7,7 +7,8 @@ export const DEFAULT_TRACKING = {
   mode: 'auto', // 'auto' | 'full' | 'torso'
   posture: 'auto', // 'auto' | 'standing' | 'sitting' (full mode only)
   minVisibility: 0.5,
-  hipVisibility: 0.6,
+  hipEnter: 0.7, // hip confidence needed to switch into full view...
+  hipExit: 0.5, // ...and the lower bar for staying in it, so the view does not flicker
 };
 
 // Knee drop below the hips, as a share of the hips-to-shoulders length. Standing,
@@ -17,13 +18,18 @@ export const DEFAULT_TRACKING = {
 export const POSTURE = { sitBelow: 0.5, standAbove: 0.65 };
 
 const seen = (lm, min) => lm && (lm.visibility ?? 1) >= min;
-const inImage = (lm) => lm.x >= 0 && lm.x <= 1 && lm.y >= 0 && lm.y <= 1;
+const inImage = (lm, maxY) => lm.x >= 0 && lm.x <= 1 && lm.y >= 0 && lm.y <= maxY;
 
-export function chooseMode(pose, opts = {}) {
+// `current` is the view in use, if any: entering full view needs clearly visible
+// hips away from the bottom edge, staying in it only needs usable ones.
+export function chooseMode(pose, opts = {}, current = null) {
   const o = { ...DEFAULT_TRACKING, ...opts };
   if (o.mode === 'full' || o.mode === 'torso') return o.mode;
+  const staying = current === 'full';
+  const vis = staying ? o.hipExit : o.hipEnter;
+  const maxY = staying ? 1 : 0.97;
   const hips = [pose[POSE.LEFT_HIP], pose[POSE.RIGHT_HIP]];
-  return hips.every((h) => seen(h, o.hipVisibility) && inImage(h)) ? 'full' : 'torso';
+  return hips.every((h) => seen(h, vis) && inImage(h, maxY)) ? 'full' : 'torso';
 }
 
 const EMPTY = Object.freeze({

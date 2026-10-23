@@ -87,3 +87,29 @@ test('torso view keeps the shoulder line as level and reports no bend', () => {
   assert.equal(m.mode, 'torso'); assert.equal(m.posture, null); assert.equal(m.bend, null);
   close(m.top, 14, 1e-6); close(m.sway, 14, 1e-6);
 });
+
+// Known limit of the even-arc model (Neil 2026-10-23: shoulders flagged on the sway
+// side during correct sways). The model is exact when the bend is spread evenly or
+// centred at mid-torso. A bend concentrated higher (releasing sway at the diaphragm,
+// upper thoracic) turns the top further than the model predicts, so the sway side
+// reads low; a bend low in the lumbar spine over a level pelvis does the opposite.
+// The shoulders, the elbows and the head all carry the same error.
+test('known limit: where the spine bends decides the error, and every check shares it', () => {
+  const cases = [
+    // bendAt, expected model error at the top (deg), with a 10 deg bend toward the right
+    [null, 0],
+    [0.5, 0],
+    [0.65, -3],
+    [0.8, -6],
+    [0.25, 5],
+  ];
+  for (const [bendAt, err] of cases) {
+    const m = measure(makeDancer({ bend: 10, bendAt, sway: 5 }));
+    const tag = `bendAt ${bendAt}`;
+    close(m.top - 5 - 10, err, 0.05, `${tag}: top lean`);
+    close(m.shoulderTilt, -err, 0.05, `${tag}: shoulders`);
+    close(m.elevR, err, 0.05, `${tag}: sway-side (right) elbow`);
+    close(m.elevL, -err, 0.05, `${tag}: outside (left) elbow`);
+    close(m.headRoll, -err, 0.05, `${tag}: head`);
+  }
+});

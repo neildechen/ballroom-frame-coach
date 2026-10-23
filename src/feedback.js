@@ -49,9 +49,8 @@ export function feedback(v) {
         ? OFF('shoulders', 'Shoulders')
       : v.shoulder.state === 'untracked'
         ? { id: 'shoulders', label: 'Shoulders', value: 'Hips not visible', tone: 'idle' }
-        : v.shoulder.state === 'ok'
-          ? { id: 'shoulders', label: 'Shoulders', value: 'Square to the body', tone: 'ok' }
-          : { id: 'shoulders', label: 'Shoulders', value: `${side(v.shoulder.state)} side low, ${deg(v.shoulder.tilt)}`.replace(/^./, (c) => c.toUpperCase()), tone: 'fault' },
+        // Information only: never red, never in the banner.
+        : { id: 'shoulders', label: 'Shoulders', value: Math.abs(v.shoulder.tilt) < 1.5 ? 'Square to the body' : `${v.shoulder.tilt >= 0 ? 'Right' : 'Left'} side ${deg(v.shoulder.tilt)} lower`, tone: 'info' },
   ];
 
   const headOff = h.tilt === 'off' && h.shift === 'off';
@@ -72,9 +71,6 @@ export function feedback(v) {
   } else if (h.shift === 'left' || h.shift === 'right') {
     text = `Head drifting to your ${h.shift}`; instruction = `Bring your head back to your ${other(h.shift)}`;
     detail = `It sits off centre to your ${h.shift}`;
-  } else if (v.shoulder.state === 'left' || v.shoulder.state === 'right') {
-    text = `${v.shoulder.state === 'left' ? 'Left' : 'Right'} shoulder dropping`; instruction = `Lift the ${v.shoulder.state} shoulder`;
-    detail = `${deg(v.shoulder.tilt)} low against your body`;
   }
   if (text !== clear) tone = 'fault';
   for (const t of tiles) t.short = SHORT[t.id];

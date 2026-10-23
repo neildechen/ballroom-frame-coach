@@ -43,6 +43,7 @@ const NOSE_LOCAL = [0, -0.005, 0.1];
 export const DEFAULT_DANCER = {
   sway: 0, // deg; whole-body lean, pelvis included; + = toward the dancer's right
   bend: 0, // deg; total turn of the spine curve from pelvis to shoulders; + = top toward the dancer's right
+  bendAt: null, // null = bend spread as the model's even arc; a number = all of it at one hinge, as a share of the torso up from the hips
   sitting: false, // knees forward, thighs pointing at the camera
   hipLineTilt: 0, // deg; rotates only the two hip points (tracking error on the hip line)
   kneesVisible: true,
@@ -79,15 +80,25 @@ export function makeDancer(overrides = {}) {
 
   // Spine: pelvis upright in body coordinates, chord length = torso, total turn = bend.
   const b = rad(p.bend);
-  const Sb = { x: -p.torso * Math.sin(b / 2), y: p.torso * Math.cos(b / 2) };
-  const arc = spineArc({ x: 0, y: 0 }, Sb, { x: 0, y: 1 });
-  const sM = 1 - (MANUBRIUM_DROP * 2 * p.shoulderHalf) / p.torso;
-  const Vw = arc.at(sM), uw = arc.tangent(sM);
-  // Shift so the shoulder midpoint is the origin.
-  const V = [Vw.x - Sb.x, Vw.y - Sb.y];
-  const u = [uw.x, uw.y];
+  const drop = MANUBRIUM_DROP * 2 * p.shoulderHalf;
+  let Sb, V, u, topDeg;
+  if (p.bendAt == null) {
+    Sb = { x: -p.torso * Math.sin(b / 2), y: p.torso * Math.cos(b / 2) };
+    const arc = spineArc({ x: 0, y: 0 }, Sb, { x: 0, y: 1 });
+    const sM = 1 - drop / p.torso;
+    const Vw = arc.at(sM), uw = arc.tangent(sM);
+    // Shift so the shoulder midpoint is the origin.
+    V = [Vw.x - Sb.x, Vw.y - Sb.y];
+    u = [uw.x, uw.y];
+    topDeg = (b * sM * 180) / Math.PI;
+  } else {
+    // Two straight pieces: pelvis-upright below the hinge, turned by the whole bend above it.
+    u = [-Math.sin(b), Math.cos(b)];
+    Sb = { x: p.torso * (1 - p.bendAt) * u[0], y: p.torso * p.bendAt + p.torso * (1 - p.bendAt) * u[1] };
+    V = [-drop * u[0], -drop * u[1]];
+    topDeg = p.bend;
+  }
   const hL = [u[1], -u[0]]; // square to u, toward the dancer's left
-  const topDeg = (b * sM * 180) / Math.PI;
   const along = (o, k1, d1, k2, d2) => [o[0] + d1[0] * k1 + d2[0] * k2, o[1] + d1[1] * k1 + d2[1] * k2];
 
   const sh = [hL[0] * Math.cos(rad(p.shoulderTilt)) + u[0] * Math.sin(rad(p.shoulderTilt)), hL[1] * Math.cos(rad(p.shoulderTilt)) + u[1] * Math.sin(rad(p.shoulderTilt))];
