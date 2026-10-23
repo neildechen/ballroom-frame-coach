@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0f17">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Frame Coach</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%230d0f17%22/%3E%3Cpath d=%22M5 15 L16 13 L27 15%22 stroke=%22%233ddc97%22 stroke-width=%224%22 stroke-linecap=%22round%22 fill=%22none%22/%3E%3Ccircle cx=%2216%22 cy=%2222%22 r=%223%22 fill=%22%23f2c14e%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<main id="stage">
+  <video id="video" playsinline muted></video>
+  <canvas id="canvas"></canvas>
+
+  <header class="bar">
+    <span class="chip" id="mode-chip">Frame Coach</span>
+    <span class="chip" id="sway-chip" hidden></span>
+    <span class="spacer"></span>
+    <span class="chip quiet" id="fps" hidden></span>
+    <button class="icon" id="settings-btn" aria-label="Settings" aria-expanded="false">Settings</button>
+  </header>
+
+  <p id="caption" class="caption" hidden></p>
+
+  <footer class="dock">
+    <p id="banner" class="banner idle" role="status" aria-live="polite"></p>
+    <section id="tiles" class="tiles" aria-label="Readings"></section>
+  </footer>
+
+  <section id="start" class="sheet start">
+    <h1>Frame Coach</h1>
+    <p class="lede">Live check of your Standard frame and head, measured against your own sway.</p>
+    <ol class="steps">
+      <li>Prop the phone at chest height, 2 to 3 metres away, facing you.</li>
+      <li>Hips in view for full checks. Waist-up works too, using the shoulder line as level.</li>
+      <li>Take hold. Red means that side or the head is off.</li>
+    </ol>
+    <div class="actions">
+      <button id="start-camera" class="primary">Start camera</button>
+      <button id="start-demo">Watch the demo</button>
+    </div>
+    <p id="start-error" class="error" hidden></p>
+    <p class="fine">Video stays on this device. Nothing is recorded or uploaded.</p>
+  </section>
+
+  <section id="settings" class="sheet settings" hidden aria-label="Settings">
+    <h2>Settings</h2>
+    <fieldset>
+      <legend>View</legend>
+      <div class="seg" role="radiogroup" id="mode-seg">
+        <label><input type="radio" name="mode" value="auto" id="mode-auto"> Auto</label>
+        <label><input type="radio" name="mode" value="full" id="mode-full"> Full body</label>
+        <label><input type="radio" name="mode" value="torso" id="mode-torso"> Torso only</label>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Camera</legend>
+      <label class="row"><span>Mirror image</span><input type="checkbox" id="mirror"></label>
+      <label class="row"><span>Use rear camera</span><input type="checkbox" id="rear"></label>
+      <label class="row"><span>Faster, less precise tracking</span><input type="checkbox" id="lite"></label>
+    </fieldset>
+    <fieldset>
+      <legend>Tolerances</legend>
+      <label class="slider"><span>Side may sit below level by</span><output id="tol-frame-out"></output>
+        <input type="range" id="tol-frame" min="0" max="10" step="0.5"></label>
+      <label class="slider"><span>Head tilt allowed</span><output id="tol-roll-out"></output>
+        <input type="range" id="tol-roll" min="1" max="15" step="0.5"></label>
+      <label class="slider"><span>Head off centre allowed</span><output id="tol-offset-out"></output>
+        <input type="range" id="tol-offset" min="0.05" max="0.4" step="0.01"></label>
+      <label class="slider"><span>Shoulder tilt allowed</span><output id="tol-shoulder-out"></output>
+        <input type="range" id="tol-shoulder" min="1" max="10" step="0.5"></label>
+    </fieldset>
+    <div class="actions">
+      <button id="reset-settings">Reset to defaults</button>
+      <button id="close-settings" class="primary">Done</button>
+    </div>
+  </section>
+</main>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
