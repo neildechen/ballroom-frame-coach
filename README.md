@@ -2,7 +2,9 @@
 
 Live camera feedback on an International Standard ballroom frame. It shows whether either side of the frame is dropping and whether the head stays centred and level, all measured against the dancer's own sway.
 
-Open the app: **https://neildechen.github.io/ballroom-frame-coach/** (demo without a camera: add `#demo`).
+- Open the app: https://neildechen.github.io/ballroom-frame-coach/
+- Demo, no camera needed: https://neildechen.github.io/ballroom-frame-coach/#demo
+- User's guide: https://neildechen.github.io/ballroom-frame-coach/guide.html
 
 Everything runs in the browser. Video never leaves the device, and nothing is recorded.
 

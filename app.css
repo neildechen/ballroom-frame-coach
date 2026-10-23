@@ -107,6 +107,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--guide); out
 .actions button.primary { background: var(--ok); border-color: var(--ok); color: #06210f; }
 .error { color: var(--fault); font-weight: 600; }
 .fine { color: var(--dim); font-size: 13px; margin: 14px 0 0; }
+.fine a, .guide-link { color: var(--ok); text-underline-offset: 3px; }
+.guide-link { flex-basis: 100%; font-weight: 600; font-size: 14px; }
 
 .settings h2 { margin: 0 0 8px; }
 fieldset { border: 0; border-top: 1px solid var(--line); margin: 0; padding: 14px 0; display: grid; gap: 10px; }

@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0f17">
+<title>Frame Coach Guide</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%227%22 fill=%22%230d0f17%22/%3E%3Cpath d=%22M5 15 L16 13 L27 15%22 stroke=%22%233ddc97%22 stroke-width=%224%22 stroke-linecap=%22round%22 fill=%22none%22/%3E%3Ccircle cx=%2216%22 cy=%2222%22 r=%223%22 fill=%22%23f2c14e%22/%3E%3C/svg%3E">
+<style>
+/* Reading page in the app's dark look. Single column, ~65ch measure. */
+:root {
+  color-scheme: dark;
+  --ink: #0d0f17;
+  --card: #151927;
+  --line: rgba(235, 238, 245, 0.14);
+  --text: #e6e8f0;
+  --dim: #a3a9bd;
+  --ok: #3ddc97;
+  --fault: #ff4d5e;
+  --guide: #f2c14e;
+  --font: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html { background: var(--ink); }
+body {
+  margin: 0; background: var(--ink); color: var(--text);
+  font: 17px/1.6 var(--font);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: calc(env(safe-area-inset-top, 0px) + 28px) calc(env(safe-area-inset-bottom, 0px) + 48px);
+}
+main { max-width: 68ch; margin: 0 auto; display: grid; gap: 8px; }
+h1 { font-size: clamp(30px, 6vw, 40px); line-height: 1.1; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+h1::after { content: ""; display: block; width: 56px; height: 4px; margin-top: 12px; border-radius: 2px; background: linear-gradient(90deg, var(--ok) 0 50%, var(--guide) 50% 100%); }
+h2 { font-size: 22px; margin: 32px 0 4px; letter-spacing: -0.01em; text-wrap: balance; scroll-margin-top: 16px; }
+h3 { font-size: 17px; margin: 18px 0 0; }
+p, ul, ol { margin: 6px 0; }
+ul, ol { padding-left: 22px; display: grid; gap: 4px; }
+a { color: var(--ok); text-underline-offset: 3px; }
+a:focus-visible { outline: 2px solid var(--guide); outline-offset: 2px; border-radius: 4px; }
+.lede { color: var(--dim); font-size: 18px; margin-top: 14px; }
+.links { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 18px 0 6px; padding: 0; list-style: none; }
+.links a {
+  display: grid; gap: 2px; padding: 14px 16px; border-radius: 12px; text-decoration: none;
+  background: var(--card); border: 1px solid var(--line); color: var(--text);
+}
+.links a strong { color: var(--ok); font-size: 17px; }
+.links a span { color: var(--dim); font-size: 14px; line-height: 1.4; }
+.links a.primary { background: var(--ok); border-color: var(--ok); }
+.links a.primary strong, .links a.primary span { color: #06210f; }
+.note { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--guide); border-radius: 10px; padding: 12px 16px; margin: 10px 0; }
+.note p { margin: 0; }
+code, kbd { font: 15px var(--mono); background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; }
+.legend { display: grid; gap: 12px; margin: 10px 0; padding: 0; list-style: none; }
+.legend li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 14px; align-items: center; }
+.legend svg { width: 64px; height: 36px; display: block; }
+.shot { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 18px; align-items: start; margin: 12px 0; }
+.shot img { width: 100%; height: auto; max-width: 100%; border-radius: 14px; border: 1px solid var(--line); display: block; }
+.shot figcaption { color: var(--dim); font-size: 15px; }
+@media (max-width: 520px) { .shot { grid-template-columns: 1fr; } .shot img { max-width: 260px; } }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; margin: 8px 0; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+th { color: var(--dim); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; }
+td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.toc { color: var(--dim); font-size: 15px; }
+.toc a { color: var(--dim); }
+footer { color: var(--dim); font-size: 14px; margin-top: 36px; border-top: 1px solid var(--line); padding-top: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Frame Coach guide</h1>
+  <p class="lede">The app watches you through the phone's camera while you hold your Standard frame. It turns either side of the frame red when it drops and tells you when your head tilts or drifts off centre. Every check is measured against your own sway, so swaying correctly never shows as a fault.</p>
+
+  <ul class="links">
+    <li><a class="primary" href="./"><strong>Open the app</strong><span>Live camera check</span></a></li>
+    <li><a href="./#demo"><strong>Watch the demo</strong><span>A stick figure runs through four common faults, no camera needed</span></a></li>
+    <li><a href="https://github.com/neildechen/ballroom-frame-coach#readme"><strong>How it works</strong><span>The measurements, their limits and the code</span></a></li>
+  </ul>
+
+  <p class="toc">On this page: <a href="#first">First time</a> · <a href="#setup">Camera setup</a> · <a href="#reading">Reading the screen</a> · <a href="#practice">Using it in practice</a> · <a href="#settings">Settings</a> · <a href="#limits">Limits</a> · <a href="#trouble">Troubleshooting</a></p>
+
+  <h2 id="first">First time</h2>
+  <ol>
+    <li>Open the app link in Safari on your iPhone (or Chrome on the Mac).</li>
+    <li>Tap <strong>Start camera</strong> and allow camera access.</li>
+    <li>Wait for the tracking model to load. The first load downloads about 40&nbsp;MB, so use Wi-Fi. Later loads are faster.</li>
+    <li>Optional: in Safari tap Share, then <strong>Add to Home Screen</strong>. If the camera does not start from the home-screen icon, open the link in Safari instead.</li>
+  </ol>
+  <div class="note"><p>If the app link shows a GitHub 404 page, the site has not been switched on yet. The repo owner turns it on once under <a href="https://github.com/neildechen/ballroom-frame-coach/settings/pages">Settings → Pages</a>: Source "Deploy from a branch", branch <code>main</code>, folder <code>/ (root)</code>. It goes live a minute or two later.</p></div>
+
+  <h2 id="setup">Camera setup</h2>
+  <ul>
+    <li>Prop the phone upright, at about chest height, 2 to 3 metres away.</li>
+    <li>Face the camera squarely. The checks are only reliable while your chest faces it.</li>
+    <li>The phone does not have to be level. The app measures from your body, so a tilted phone gives the same readings.</li>
+    <li>Light from the front works best. A top that contrasts with the wall, and sleeves that show the elbows, help the tracking.</li>
+  </ul>
+  <h3>Full body or torso</h3>
+  <p>With your hips in view you get all five checks. The app draws a line from the middle of your hips to the middle of your shoulders and treats that as your body's vertical; "level" is square to it.</p>
+  <p>Waist-up also works. The app then uses your shoulder line as level and drops the shoulder check. In this view it cannot tell a whole side dropping (shoulder and elbow together) from sway, so stand back far enough to show the hips when you can. The chip at the top left says which view is in use.</p>
+
+  <h2 id="reading">Reading the screen</h2>
+  <figure class="shot">
+    <img src="assets/guide-demo.png" alt="Demo screen: the figure sways to its right, the left arm line is red at minus 9 degrees, the right arm is green at plus 2 degrees, and the banner reads Left side dropping." width="780" height="1688">
+    <figcaption>Demo, swaying right. The left arm sits 9° below the sway-adjusted level line, so it is red, the left screen edge glows red and the banner names it. The right arm is 2° above level and green. The head tilts with the sway, so its ring is green.</figcaption>
+  </figure>
+  <ul class="legend">
+    <li><svg viewBox="0 0 64 36" aria-hidden="true"><line x1="4" y1="18" x2="60" y2="18" stroke="#f2c14e" stroke-width="3" stroke-dasharray="7 6" stroke-linecap="round"/></svg>
+      <span><strong>Gold dashed line through your shoulders:</strong> your level line. It tilts with your sway. Each arm line should sit on it or above it. In full-body view a second gold dashed line runs down to your hips; that is your body axis.</span></li>
+    <li><svg viewBox="0 0 64 36" aria-hidden="true"><line x1="6" y1="20" x2="58" y2="14" stroke="#3ddc97" stroke-width="7" stroke-linecap="round"/><circle cx="58" cy="14" r="5" fill="#3ddc97"/></svg>
+      <span><strong>Green arm line:</strong> from the middle of your shoulders to that elbow, at or above level. The number shows how far above (+) or below (−) level it sits, in degrees.</span></li>
+    <li><svg viewBox="0 0 64 36" aria-hidden="true"><line x1="6" y1="12" x2="58" y2="26" stroke="#ff4d5e" stroke-width="7" stroke-linecap="round"/><circle cx="58" cy="26" r="5" fill="#ff4d5e"/></svg>
+      <span><strong>Red arm line and a red glow on that edge of the screen:</strong> that side is dropping. Both red at once is the umbrella frame.</span></li>
+    <li><svg viewBox="0 0 64 36" aria-hidden="true"><circle cx="32" cy="18" r="12" fill="none" stroke="#3ddc97" stroke-width="3"/><line x1="16" y1="18" x2="48" y2="18" stroke="#3ddc97" stroke-width="4" stroke-linecap="round"/></svg>
+      <span><strong>Ring on your head and the line across your face:</strong> the face line turns red when your head does not tilt with your sway. The ring turns red when your head drifts sideways.</span></li>
+    <li><svg viewBox="0 0 64 36" aria-hidden="true"><line x1="32" y1="34" x2="32" y2="2" stroke="#3ddc97" stroke-width="3" stroke-dasharray="4 5" stroke-linecap="round"/><circle cx="32" cy="34" r="3" fill="#3ddc97"/></svg>
+      <span><strong>Dashed upright line from between your elbows:</strong> where the centre of your head should sit. A solid red line joins it to your head when you drift.</span></li>
+  </ul>
+  <p>The banner at the bottom names the most important problem at that moment, in this order: both sides dropping, one side dropping, head tilt, head drifting, shoulder dropping. The tiles under it give each check's reading. Left and right always mean your own left and right.</p>
+  <p>A fault has to last about 0.15 seconds before it shows, and it clears once you are back inside the tolerance with a little margin. Brief wobbles and tracking jitter do not show.</p>
+
+  <h2 id="practice">Using it in practice</h2>
+  <ul>
+    <li><strong>Set the frame.</strong> Take hold alone, facing the camera, and adjust until both arms and the head are green.</li>
+    <li><strong>Sway check.</strong> Sway slowly to one side, hold for three seconds, come back through upright and repeat to the other side. Watch both numbers, especially on the side you sway toward.</li>
+    <li><strong>Moving.</strong> Steps that keep your chest toward the camera read well. During turns the shoulders face away and the readings stop meaning anything.</li>
+    <li><strong>Keep a recording.</strong> On iPhone, start Screen Recording from Control Centre before you dance. The recording keeps the overlay, so you can review it or show it in a lesson. The app itself records nothing.</li>
+  </ul>
+
+  <h2 id="settings">Settings</h2>
+  <p>Tap <strong>Settings</strong> at the top right. Changes apply straight away and are remembered on that device.</p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Setting</th><th>What it does</th><th>Default</th></tr></thead>
+    <tbody>
+      <tr><td>View</td><td>Auto picks full body when the hips are visible and torso otherwise. Pick one to stop it switching.</td><td>Auto</td></tr>
+      <tr><td>Mirror image</td><td>Shows the picture like a mirror.</td><td>On</td></tr>
+      <tr><td>Use rear camera</td><td>Sharper picture, but you cannot see the screen unless someone holds the phone. Turns mirroring off.</td><td>Off</td></tr>
+      <tr><td>Faster, less precise tracking</td><td>For older phones. Use it if the picture lags; on larger screens a frame-rate counter shows at the top.</td><td>Off</td></tr>
+      <tr><td>Side may sit below level by</td><td>How far an elbow may sit below the level line before that side counts as dropping. 0° is the strict rule.</td><td class="num">3°</td></tr>
+      <tr><td>Head tilt allowed</td><td>How far the head may tilt away from your sway.</td><td class="num">5°</td></tr>
+      <tr><td>Head off centre allowed</td><td>How far the head may sit toward one elbow, as a share of the distance from the middle to that elbow.</td><td class="num">15%</td></tr>
+      <tr><td>Shoulder tilt allowed</td><td>How far the shoulder line may tilt against your body axis (full body only).</td><td class="num">4°</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The 3° side tolerance covers tracking jitter and the fact that the elbow usually sits a little below the shoulder joint. If correct frames show red, raise it; if a drop you can see stays green, lower it.</p>
+
+  <h2 id="limits">Limits</h2>
+  <ul>
+    <li>Readings are reliable only while your chest faces the camera.</li>
+    <li>It is built for practising alone. A partner in hold hides your elbows and their body.</li>
+    <li>Elbows held forward or back look shorter on camera. Whether they read as above or below level stays correct.</li>
+    <li>A bend at the waist shows partly as sway. In full-body view the shoulder check picks up the rest.</li>
+    <li>Points the tracker is unsure of show as "not visible" and never as faults.</li>
+  </ul>
+
+  <h2 id="trouble">Troubleshooting</h2>
+  <h3>"Camera access was blocked"</h3>
+  <p>On iPhone, tap <kbd>aA</kbd> in Safari's address bar, then Website Settings, and set Camera to Allow. Also check Settings → Apps → Safari → Camera. On the Mac in Chrome, click the camera icon at the right of the address bar and allow it. Then reload the page.</p>
+  <h3>"Step into view so both shoulders and elbows are visible"</h3>
+  <p>Step back or move the phone until both elbows are in the picture with some space around them.</p>
+  <h3>An elbow or the face shows "not visible"</h3>
+  <p>Add light from the front, show the elbows (short or fitted sleeves) and keep your arms inside the picture.</p>
+  <h3>The picture lags</h3>
+  <p>Turn on <strong>Faster, less precise tracking</strong>, close other apps and keep the phone plugged in for long sessions.</p>
+  <h3>The page shows a GitHub 404</h3>
+  <p>The site is not switched on yet. See the note under <a href="#first">First time</a>.</p>
+
+  <footer>
+    <p>Everything runs on your device. The video is never uploaded or saved. Source code: <a href="https://github.com/neildechen/ballroom-frame-coach">github.com/neildechen/ballroom-frame-coach</a>.</p>
+  </footer>
+</main>
+</body>
+</html>

@@ -222,7 +222,7 @@ $('#mode-seg').addEventListener('change', (e) => { settings.mode = e.target.valu
 $('#mirror').addEventListener('change', (e) => { settings.mirror = e.target.checked; applySettings(); });
 $('#rear').addEventListener('change', async (e) => {
   settings.rear = e.target.checked;
-  if (source === 'camera') settings.mirror = !settings.rear; // a rear camera is not a mirror
+  settings.mirror = !settings.rear; // a rear camera is not a mirror
   syncSettingsForm();
   applySettings();
   if (source === 'camera') await openCamera().catch(() => {});
