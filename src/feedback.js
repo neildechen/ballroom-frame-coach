@@ -26,8 +26,11 @@ export function feedback(v) {
   }
   const h = v.head;
   const swayDeg = Math.round(Math.abs(v.sway));
+  const lean = (d) => (Math.round(Math.abs(d)) === 0 ? '0°' : `${Math.round(Math.abs(d))}° ${d > 0 ? 'right' : 'left'}`);
+  // In full view the top of the spine can lean further than the straight line; show both when they differ.
+  const curved = v.mode === 'full' && v.top != null && Math.abs(v.top - v.sway) >= 1;
   const tiles = [
-    { id: 'sway', label: 'Sway', value: swayDeg === 0 ? '0°, upright' : `${swayDeg}° to your ${v.sway > 0 ? 'right' : 'left'}`, tone: 'info' },
+    { id: 'sway', label: 'Sway', value: curved ? `${lean(v.sway)}, top ${lean(v.top)}` : swayDeg === 0 ? '0°, upright' : `${swayDeg}° to your ${v.sway > 0 ? 'right' : 'left'}`, tone: 'info' },
     sideTile('left', 'Left side', v.left),
     sideTile('right', 'Right side', v.right),
     h.tilt === 'off' ? OFF('headTilt', 'Head tilt') : h.tilt === 'untracked'
@@ -77,5 +80,5 @@ export function feedback(v) {
   for (const t of tiles) t.short = SHORT[t.id];
 
   const sway = swayDeg === 0 ? 'Sway 0°' : `Sway ${swayDeg}° ${v.sway > 0 ? 'right' : 'left'}`;
-  return { banner: { text, tone, instruction, detail }, tiles, sway, mode: v.mode === 'full' ? 'Full body' : 'Torso only' };
+  return { banner: { text, tone, instruction, detail }, tiles, sway, mode: v.mode === 'full' ? (v.posture === 'sitting' ? 'Sitting' : 'Standing') : 'Torso only' };
 }

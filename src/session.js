@@ -2,7 +2,7 @@
 
 import { POSE, FACE_PAIRS, FACE_CHEEKS } from './landmarks.js';
 import { LandmarkSmoother, Latch } from './filters.js';
-import { measure, DEFAULT_TRACKING } from './analyze.js';
+import { measure, DEFAULT_TRACKING, POSTURE } from './analyze.js';
 import { evaluate, DEFAULT_TOLERANCES } from './rules.js';
 
 const SIGNALS = ['leftDrop', 'rightDrop', 'shoulder', 'headTilt', 'headShift'];
@@ -19,17 +19,31 @@ export class Session {
     this.poseSmoother = new LandmarkSmoother(Object.values(POSE), smoothing);
     this.faceSmoother = new LandmarkSmoother([...FACE_PAIRS.flat(), ...FACE_CHEEKS], smoothing);
     this.latches = Object.fromEntries(SIGNALS.map((k) => [k, new Latch(timing)]));
+    this.posture = 'standing'; // latched automatic choice
+    this.postureNext = null;
+    this.postureSince = 0;
   }
 
   setTolerances(t) { this.tolerances = { ...this.tolerances, ...t }; }
   setTracking(t) { this.tracking = { ...this.tracking, ...t }; }
   setChecks(c) { this.checks = { ...this.checks, ...c }; }
 
+  // Standing or sitting, from the knees, with a gap and a 0.7 s hold so it does not flicker.
+  updatePosture(kneeDrop, t) {
+    if (kneeDrop == null) { this.postureNext = null; return; }
+    const want = kneeDrop < POSTURE.sitBelow ? 'sitting' : kneeDrop > POSTURE.standAbove ? 'standing' : this.posture;
+    if (want === this.posture) { this.postureNext = null; return; }
+    if (this.postureNext !== want) { this.postureNext = want; this.postureSince = t; return; }
+    if (t - this.postureSince >= 700) { this.posture = want; this.postureNext = null; }
+  }
+
   update({ pose, face, aspect, t }) {
     const tSec = t / 1000;
     const sp = this.poseSmoother.apply(pose, tSec);
     const sf = this.faceSmoother.apply(face, tSec);
-    const m = measure({ pose: sp, face: sf, aspect }, this.tracking);
+    const posture = this.tracking.posture === 'auto' ? this.posture : this.tracking.posture;
+    const m = measure({ pose: sp, face: sf, aspect }, { ...this.tracking, posture });
+    this.updatePosture(m.kneeDrop, t);
     const s = evaluate(m, this.tolerances);
 
     const on = {};
@@ -53,7 +67,10 @@ export class Session {
     return {
       tracked: m.tracked,
       mode: m.mode,
+      posture: m.posture,
       sway: m.sway,
+      top: m.top,
+      bend: m.bend,
       left,
       right,
       umbrella: left.state === 'drop' && right.state === 'drop',

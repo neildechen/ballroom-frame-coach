@@ -20,6 +20,8 @@ function* cases(seed, n, torso) {
       headPitch: pick(-15, 15),
       headOffset: pick(-0.4, 0.4),
       hipsVisible: !torso,
+      bend: torso ? 0 : pick(-30, 30),
+      size: torso ? 1 : 0.7, // keeps the hips in the picture at the largest combined leans
     };
   }
 }
@@ -42,6 +44,7 @@ for (const torso of [false, true]) {
         close(m.headRoll, body.headRoll, 1e-6, `headRoll ${tag}`);
         close(m.headOffset, body.headOffset, 1e-6, `headOffset ${tag}`);
         if (!torso) close(m.shoulderTilt, body.shoulderTilt, 1e-6, `shoulderTilt ${tag}`);
+        if (!torso) close(m.bend, body.bend, 1e-6, `bend ${tag}`);
         checked++;
       }
     }

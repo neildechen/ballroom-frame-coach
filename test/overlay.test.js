@@ -56,9 +56,9 @@ for (const hipsVisible of [true, false]) {
       assert.ok(target, `head target drawn ${tag}`);
       close(m.headOffset, 0, 1e-6, `headOffset ${tag}`);
       const [a, b] = target.path;
-      const s = map(m.frame.S), c = map(m.points.C);
-      close(a.x, s.x, 1e-6, `starts at S (x) ${tag}`);
-      close(a.y, s.y, 1e-6, `starts at S (y) ${tag}`);
+      const s = map(m.frame.V), c = map(m.points.C);
+      close(a.x, s.x, 1e-6, `starts at the manubrium (x) ${tag}`);
+      close(a.y, s.y, 1e-6, `starts at the manubrium (y) ${tag}`);
       close(offLine(c, a, b), 0, 1e-6, `passes through the head ${tag}`);
       assert.ok(b.y < c.y, `reaches above the head centre ${tag}`);
     }

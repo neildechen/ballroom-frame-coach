@@ -1,13 +1,20 @@
 // One frame of landmarks -> raw measurements. No time, no smoothing, no verdicts.
 
 import { POSE, FACE_PAIRS, FACE_CHEEKS } from './landmarks.js';
-import { toWorld, mid, sub, dot, neg, bodyFrame, sideElevation, faceAxis, signedAngle, leanFromVertical } from './geometry.js';
+import { toWorld, mid, sub, dot, len, neg, ccw, bodyFrame, sideElevation, faceAxis, signedAngle, leanFromVertical, DEG } from './geometry.js';
 
 export const DEFAULT_TRACKING = {
   mode: 'auto', // 'auto' | 'full' | 'torso'
+  posture: 'auto', // 'auto' | 'standing' | 'sitting' (full mode only)
   minVisibility: 0.5,
   hipVisibility: 0.6,
 };
+
+// Knee drop below the hips, as a share of the hips-to-shoulders length. Standing,
+// the thighs hang straight down (about 0.9); sitting facing the camera they point
+// at it and look short (about 0.2 to 0.4). Session.js latches between these with a
+// gap; a single measure() call splits at the middle.
+export const POSTURE = { sitBelow: 0.5, standAbove: 0.65 };
 
 const seen = (lm, min) => lm && (lm.visibility ?? 1) >= min;
 const inImage = (lm) => lm.x >= 0 && lm.x <= 1 && lm.y >= 0 && lm.y <= 1;
@@ -20,7 +27,7 @@ export function chooseMode(pose, opts = {}) {
 }
 
 const EMPTY = Object.freeze({
-  tracked: false, mode: null, sway: null, elevL: null, elevR: null, shoulderTilt: null,
+  tracked: false, mode: null, posture: null, kneeDrop: null, sway: null, top: null, bend: null, elevL: null, elevR: null, shoulderTilt: null,
   headRoll: null, headOffset: null, headSource: null, frame: null, points: null,
 });
 
@@ -47,10 +54,21 @@ export function measure({ pose, face, aspect }, opts = {}) {
   const RE = seen(P(POSE.RIGHT_ELBOW), o.minVisibility) ? W(P(POSE.RIGHT_ELBOW)) : null;
   w.LE = LE; w.RE = RE;
 
-  const frame = bodyFrame(w, mode);
-  const { S, u, hL } = frame;
-  const elevL = LE ? sideElevation(LE, S, u, hL) : null;
-  const elevR = RE ? sideElevation(RE, S, u, neg(hL)) : null;
+  let kneeDrop = null;
+  if (mode === 'full' && seen(P(POSE.LEFT_KNEE), o.minVisibility) && seen(P(POSE.RIGHT_KNEE), o.minVisibility)) {
+    const H = mid(w.LH, w.RH);
+    kneeDrop = (H.y - mid(W(P(POSE.LEFT_KNEE)), W(P(POSE.RIGHT_KNEE))).y) / len(sub(mid(w.LS, w.RS), H));
+  }
+  let posture = null;
+  if (mode === 'full') {
+    posture = o.posture === 'standing' || o.posture === 'sitting' ? o.posture
+      : kneeDrop != null && kneeDrop < (POSTURE.sitBelow + POSTURE.standAbove) / 2 ? 'sitting' : 'standing';
+  }
+
+  const frame = bodyFrame(w, mode, { posture });
+  const { S, V, u, hL } = frame;
+  const elevL = LE ? sideElevation(LE, V, u, hL) : null;
+  const elevR = RE ? sideElevation(RE, V, u, neg(hL)) : null;
   const shoulderTilt = mode === 'full' ? signedAngle(sub(w.LS, w.RS), hL, u) : null;
 
   let axis = null, headSource = null;
@@ -67,19 +85,26 @@ export function measure({ pose, face, aspect }, opts = {}) {
   }
   const headRoll = axis ? signedAngle(axis, hL, u) : null;
 
-  // Head position: sideways distance of the head centre from the body axis
-  // through S, as a fraction of half the shoulder width.
+  // Head position: sideways distance of the head centre from the body axis carried
+  // up from the manubrium, as a fraction of half the shoulder width.
   let headOffset = null;
   const halfShoulders = dot(sub(w.LS, w.RS), hL) / 2;
-  if (w.C && halfShoulders > 0) headOffset = dot(sub(w.C, S), hL) / halfShoulders;
+  if (w.C && halfShoulders > 0) headOffset = dot(sub(w.C, V), hL) / halfShoulders;
 
   return {
     tracked: true,
     mode,
-    sway: leanFromVertical(frame),
+    posture,
+    kneeDrop,
+    // sway: the straight hips-to-shoulders line's lean; top: the lean at the
+    // manubrium, which the frame is judged against; bend: the spine curve's total turn.
+    sway: leanFromVertical(frame, frame.chordU ?? frame.u),
+    top: leanFromVertical(frame),
+    // + = curving toward the dancer's right, whichever way the image is mirrored
+    bend: frame.arc ? frame.arc.theta * DEG * (dot(ccw(frame.u), frame.hL) < 0 ? 1 : -1) : null,
     elevL, elevR, shoulderTilt,
     headRoll, headOffset, headSource,
     frame,
-    points: { ...w, faceAxis: axis },
+    points: { ...w, V, faceAxis: axis },
   };
 }

@@ -86,3 +86,11 @@ test('each finding comes with an instruction for the Glance look', () => {
   }
   assert.deepEqual(feedback(v()).tiles.map((t) => t.short), ['Sway', 'Left', 'Right', 'Tilt', 'Head', 'Shoulders']);
 });
+
+test('a curved spine shows both the straight sway and the top lean', () => {
+  const f = feedback(v({ sway: 12.2, top: 26.6, posture: 'standing' }));
+  assert.equal(f.tiles.find((t) => t.id === 'sway').value, '12° right, top 27° right');
+  assert.equal(f.mode, 'Standing');
+  assert.equal(feedback(v({ sway: 10, top: 10.3 })).tiles.find((t) => t.id === 'sway').value, '10° to your right');
+  assert.equal(feedback(v({ posture: 'sitting' })).mode, 'Sitting');
+});

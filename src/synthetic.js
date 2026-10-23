@@ -1,10 +1,13 @@
 // Synthetic dancers, used by the test suite and the in-app demo. A skeleton is built in "body coordinates"
 // (origin at the shoulder midpoint, +x toward the dancer's left, +y up the
-// body), then swayed, rolled by the camera, optionally mirrored, and finally
+// body): the pelvis, a spine curved by `bend` (the same circular-arc model the
+// analysis uses), and the shoulders, arms and head set on the top of that curve.
+// It is then swayed as a whole, rolled by the camera, optionally mirrored, and
 // written out as MediaPipe-style normalized landmarks (x right, y down, both
 // 0..1 of the image width/height).
 
 import { POSE, POSE_COUNT, FACE_PAIRS, FACE_COUNT } from './landmarks.js';
+import { spineArc, MANUBRIUM_DROP } from './geometry.js';
 
 const rad = (d) => (d * Math.PI) / 180;
 const rot = ([x, y], deg) => {
@@ -38,7 +41,11 @@ const EYES_LOCAL = FACE_LOCAL[0];
 const NOSE_LOCAL = [0, -0.005, 0.1];
 
 export const DEFAULT_DANCER = {
-  sway: 0, // deg; + = top of the body toward the dancer's right
+  sway: 0, // deg; whole-body lean, pelvis included; + = toward the dancer's right
+  bend: 0, // deg; total turn of the spine curve from pelvis to shoulders; + = top toward the dancer's right
+  sitting: false, // knees forward, thighs pointing at the camera
+  hipLineTilt: 0, // deg; rotates only the two hip points (tracking error on the hip line)
+  kneesVisible: true,
   elevL: 0, // deg above body-horizontal, shoulder midpoint -> left elbow
   elevR: 0,
   shoulderTilt: 0, // deg; + = left shoulder higher than body-horizontal
@@ -70,18 +77,39 @@ export function makeDancer(overrides = {}) {
   const p = { ...DEFAULT_DANCER, ...overrides };
   for (const k of ['armReach', 'shoulderHalf', 'hipHalf', 'torso', 'headHeight']) p[k] *= p.size;
 
-  const LS = rot([p.shoulderHalf, 0], p.shoulderTilt);
+  // Spine: pelvis upright in body coordinates, chord length = torso, total turn = bend.
+  const b = rad(p.bend);
+  const Sb = { x: -p.torso * Math.sin(b / 2), y: p.torso * Math.cos(b / 2) };
+  const arc = spineArc({ x: 0, y: 0 }, Sb, { x: 0, y: 1 });
+  const sM = 1 - (MANUBRIUM_DROP * 2 * p.shoulderHalf) / p.torso;
+  const Vw = arc.at(sM), uw = arc.tangent(sM);
+  // Shift so the shoulder midpoint is the origin.
+  const V = [Vw.x - Sb.x, Vw.y - Sb.y];
+  const u = [uw.x, uw.y];
+  const hL = [u[1], -u[0]]; // square to u, toward the dancer's left
+  const topDeg = (b * sM * 180) / Math.PI;
+  const along = (o, k1, d1, k2, d2) => [o[0] + d1[0] * k1 + d2[0] * k2, o[1] + d1[1] * k1 + d2[1] * k2];
+
+  const sh = [hL[0] * Math.cos(rad(p.shoulderTilt)) + u[0] * Math.sin(rad(p.shoulderTilt)), hL[1] * Math.cos(rad(p.shoulderTilt)) + u[1] * Math.sin(rad(p.shoulderTilt))];
+  const LS = [sh[0] * p.shoulderHalf, sh[1] * p.shoulderHalf];
   const RS = [-LS[0], -LS[1]];
-  const LE = [p.armReach * Math.cos(rad(p.elevL)), p.armReach * Math.sin(rad(p.elevL))];
-  const RE = [-p.armReach * Math.cos(rad(p.elevR)), p.armReach * Math.sin(rad(p.elevR))];
-  const LH = [p.hipHalf, -p.torso];
-  const RH = [-p.hipHalf, -p.torso];
-  const C = [p.headOffset * LS[0], p.headHeight]; // LS[0] = half the shoulder width along body-horizontal
+  const LE = along(V, p.armReach * Math.cos(rad(p.elevL)), hL, p.armReach * Math.sin(rad(p.elevL)), u);
+  const RE = along(V, -p.armReach * Math.cos(rad(p.elevR)), hL, p.armReach * Math.sin(rad(p.elevR)), u);
+  const H = [-Sb.x, -Sb.y];
+  const hip = rot([p.hipHalf, 0], p.hipLineTilt);
+  const LH = [H[0] + hip[0], H[1] + hip[1]];
+  const RH = [H[0] - hip[0], H[1] - hip[1]];
+  const kneeDrop = p.sitting ? 0.25 : 0.9; // share of the torso length, see analyze.js POSTURE
+  const LK = [LH[0] + 0.01, LH[1] - kneeDrop * p.torso];
+  const RK = [RH[0] - 0.01, RH[1] - kneeDrop * p.torso];
+  // Head centre on the axis carried up from the manubrium; headOffset along hL.
+  const halfShoulders = p.shoulderHalf * Math.cos(rad(p.shoulderTilt));
+  const C = along(V, p.headOffset * halfShoulders, hL, p.headHeight + MANUBRIUM_DROP * 2 * p.shoulderHalf, u);
 
   const head = (local) => {
     let q = rotX(local.map((c) => c * p.size), -p.headPitch);
     q = rotY(q, p.headYaw);
-    q = rotZ(q, p.headRoll);
+    q = rotZ(q, p.headRoll + topDeg);
     return [C[0] + q[0], C[1] + q[1]];
   };
 
@@ -103,6 +131,8 @@ export function makeDancer(overrides = {}) {
   set(POSE.RIGHT_ELBOW, RE, p.rightElbowVisibility ?? p.visibility);
   set(POSE.LEFT_HIP, LH, p.hipsVisible ? p.visibility : 0.05);
   set(POSE.RIGHT_HIP, RH, p.hipsVisible ? p.visibility : 0.05);
+  set(POSE.LEFT_KNEE, LK, p.hipsVisible && p.kneesVisible ? p.visibility : 0.05);
+  set(POSE.RIGHT_KNEE, RK, p.hipsVisible && p.kneesVisible ? p.visibility : 0.05);
   set(POSE.LEFT_EAR, head(EARS_LOCAL[0]));
   set(POSE.RIGHT_EAR, head(EARS_LOCAL[1]));
   set(POSE.LEFT_EYE, head(EYES_LOCAL[0]));

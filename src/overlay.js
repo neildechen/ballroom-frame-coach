@@ -38,6 +38,21 @@ function line(ctx, a, b, color, width, dash = null) {
   ctx.restore();
 }
 
+function polyline(ctx, pts, color, width, dash = null) {
+  ctx.save();
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  if (dash) ctx.setLineDash(dash);
+  for (const [c, w] of [[COLORS.shadow, width + 4], [color, width]]) {
+    ctx.strokeStyle = c; ctx.lineWidth = w;
+    ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+    for (const p of pts.slice(1)) ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+const sideDeg = (deg) => { const d = Math.round(Math.abs(deg)); return d === 0 ? '0°' : `${d}° ${deg > 0 ? 'R' : 'L'}`; };
+
 function dot2(ctx, p, r, color) {
   ctx.save();
   ctx.fillStyle = COLORS.shadow;
@@ -84,23 +99,23 @@ export function drawOverlay(ctx, { rect, aspect, mirror, verdict, dpr = 1, quiet
   const P = m.points, F = m.frame;
   const map = makeMapper(rect, aspect, mirror);
   const k = Math.max(1, rect.h / 720) * dpr; // stroke scale
-  const S = F.S;
+  const S = F.S, V = F.V; // V: top of the manubrium, where the frame is measured from
 
-  const reach = Math.max(P.LE ? len(sub(P.LE, S)) : 0, P.RE ? len(sub(P.RE, S)) : 0, len(sub(P.LS, P.RS)));
+  const reach = Math.max(P.LE ? len(sub(P.LE, V)) : 0, P.RE ? len(sub(P.RE, V)) : 0, len(sub(P.LS, P.RS)));
 
-  // Reference: body axis from the hips up to S (full; the head target carries it on
-  // above S) and the sway-adjusted horizontal through S.
+  // Reference: the spine curve from the hips up to the manubrium (full; the head
+  // target carries it on), and the level line square to the curve at the manubrium.
   calm('ok');
-  if (m.mode === 'full') line(ctx, map(mid(P.LH, P.RH)), map(S), COLORS.guide, 2 * k, [8 * k, 8 * k]);
+  if (F.arc) polyline(ctx, Array.from({ length: 17 }, (_, i) => map(F.arc.at((F.sM * i) / 16))), COLORS.guide, 2 * k, [8 * k, 8 * k]);
   // Sway readout just below the body axis (below the hips, or below the shoulders in torso view).
   {
-    const base = m.mode === 'full' ? mid(P.LH, P.RH) : add(S, scale(F.u, -len(sub(P.LS, P.RS)) * 0.9));
-    const sw = Math.round(Math.abs(m.sway));
+    const base = F.arc ? F.H : add(V, scale(F.u, -len(sub(P.LS, P.RS)) * 0.9));
+    const curved = F.arc && Math.abs(m.top - m.sway) >= 1;
     ctx.globalAlpha = 1; // a readout, not a guide: never faded
-    label(ctx, map(add(base, scale(F.u, -reach * 0.34))), sw === 0 ? 'sway 0°' : `sway ${sw}° ${m.sway > 0 ? 'R' : 'L'}`, COLORS.guide, 17 * k);
+    label(ctx, map(add(base, scale(F.u, -reach * 0.34))), curved ? `sway ${sideDeg(m.sway)} · top ${sideDeg(m.top)}` : `sway ${sideDeg(m.top)}`, COLORS.guide, 17 * k);
     calm('ok');
   }
-  line(ctx, map(add(S, scale(F.hL, -reach * 1.15))), map(add(S, scale(F.hL, reach * 1.15))), COLORS.guide, 2 * k, [8 * k, 8 * k]);
+  line(ctx, map(add(V, scale(F.hL, -reach * 1.15))), map(add(V, scale(F.hL, reach * 1.15))), COLORS.guide, 2 * k, [8 * k, 8 * k]);
 
   // Shoulder line (the reference itself in torso mode).
   calm(verdict.shoulder.state);
@@ -112,22 +127,22 @@ export function drawOverlay(ctx, { rect, aspect, mirror, verdict, dpr = 1, quiet
     if (!E) continue;
     const c = stateColor(side.state);
     calm(side.state);
-    line(ctx, map(S), map(E), c, wq(side.state, 8 * k));
+    line(ctx, map(V), map(E), c, wq(side.state, 8 * k));
     dot2(ctx, map(E), wq(side.state, 8 * k), c);
     const tag = add(E, add(scale(dir, reach * 0.12), scale(F.u, reach * 0.14)));
     label(ctx, map(tag), fmtDeg(side.elev), c, 22 * k);
   }
   calm('ok');
-  dot2(ctx, map(S), 6 * k, COLORS.guide);
+  dot2(ctx, map(V), 6 * k, COLORS.guide);
 
-  // Head: ring at the head centre, face axis, and the target: the body axis carried up from S.
+  // Head: ring at the head centre, face axis, and the target: the body axis carried up from the manubrium.
   if (P.C) {
     const r = len(sub(P.LS, P.RS)) * 0.38;
     const tilt = verdict.head.tilt, shift = verdict.head.shift;
     calm(shift);
-    const up = dot(sub(P.C, S), F.u);
-    const target = add(S, scale(F.u, up));
-    line(ctx, map(S), map(add(S, scale(F.u, up + r * 1.4))), stateColor(shift), 2.5 * k, [5 * k, 7 * k]);
+    const up = dot(sub(P.C, V), F.u);
+    const target = add(V, scale(F.u, up));
+    line(ctx, map(V), map(add(V, scale(F.u, up + r * 1.4))), stateColor(shift), 2.5 * k, [5 * k, 7 * k]);
     if (shift === 'left' || shift === 'right') line(ctx, map(target), map(P.C), COLORS.fault, 3 * k);
     ring(ctx, map(P.C), r * rect.h, stateColor(shift), 3 * k); // world units are image heights
     if (P.faceAxis) {
