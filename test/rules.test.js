@@ -8,7 +8,7 @@ const ev = (m, tol) => evaluate({ ...base, ...m }, tol);
 test('defaults match the agreed design', () => {
   assert.deepEqual(
     { ...DEFAULT_TOLERANCES },
-    { frameDeg: 3, shoulderDeg: 4, headRollDeg: 5, headOffset: 0.15, hysteresisDeg: 1, hysteresisOffset: 0.03 },
+    { frameDeg: 3, shoulderDeg: 4, headRollDeg: 5, headOffset: 0.4, hysteresisDeg: 1, hysteresisOffset: 0.08 },
   );
 });
 
@@ -32,10 +32,10 @@ test('head tilt direction: positive roll means the head leans to the dancer\'s r
   assert.equal(ev({ headRoll: 4 }).headTilt.fault, false);
 });
 
-test('head shift direction: positive offset is toward the left elbow', () => {
-  assert.equal(ev({ headOffset: 0.2 }).headShift.dir, 'left');
-  assert.equal(ev({ headOffset: -0.2 }).headShift.fault, true);
-  assert.equal(ev({ headOffset: 0.1 }).headShift.fault, false);
+test('head shift direction: positive offset is toward the dancer\'s left', () => {
+  assert.equal(ev({ headOffset: 0.5 }).headShift.dir, 'left');
+  assert.equal(ev({ headOffset: -0.5 }).headShift.fault, true);
+  assert.equal(ev({ headOffset: 0.3 }).headShift.fault, false);
 });
 
 test('shoulder signal names the low side and is off in torso mode', () => {

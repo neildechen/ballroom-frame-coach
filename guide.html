@@ -117,7 +117,7 @@ footer { color: var(--dim); font-size: 14px; margin-top: 36px; border-top: 1px s
     <li><svg viewBox="0 0 64 36" aria-hidden="true"><circle cx="32" cy="18" r="12" fill="none" stroke="#3ddc97" stroke-width="3"/><line x1="16" y1="18" x2="48" y2="18" stroke="#3ddc97" stroke-width="4" stroke-linecap="round"/></svg>
       <span><strong>Ring on your head and the line across your face:</strong> the face line turns red when your head does not tilt with your sway. The ring turns red when your head drifts sideways.</span></li>
     <li><svg viewBox="0 0 64 36" aria-hidden="true"><line x1="32" y1="34" x2="32" y2="2" stroke="#3ddc97" stroke-width="3" stroke-dasharray="4 5" stroke-linecap="round"/><circle cx="32" cy="34" r="3" fill="#3ddc97"/></svg>
-      <span><strong>Dashed upright line from between your elbows:</strong> where the centre of your head should sit. A solid red line joins it to your head when you drift.</span></li>
+      <span><strong>Dashed upright line rising from the middle of your shoulders:</strong> your body axis carried up, where the centre of your head should sit. It leans with your sway. A solid red line joins it to your head when you drift.</span></li>
   </ul>
   <p>The banner at the bottom names the most important problem at that moment, in this order: both sides dropping, one side dropping, head tilt, head drifting, shoulder dropping. The tiles under it give each check's reading. Left and right always mean your own left and right.</p>
   <p>A fault has to last about 0.15 seconds before it shows, and it clears once you are back inside the tolerance with a little margin. Brief wobbles and tracking jitter do not show.</p>
@@ -142,7 +142,7 @@ footer { color: var(--dim); font-size: 14px; margin-top: 36px; border-top: 1px s
       <tr><td>Faster, less precise tracking</td><td>For older phones. Use it if the picture lags; on larger screens a frame-rate counter shows at the top.</td><td>Off</td></tr>
       <tr><td>Side may sit below level by</td><td>How far an elbow may sit below the level line before that side counts as dropping. 0° is the strict rule.</td><td class="num">3°</td></tr>
       <tr><td>Head tilt allowed</td><td>How far the head may tilt away from your sway.</td><td class="num">5°</td></tr>
-      <tr><td>Head off centre allowed</td><td>How far the head may sit toward one elbow, as a share of the distance from the middle to that elbow.</td><td class="num">15%</td></tr>
+      <tr><td>Head off centre allowed</td><td>How far the head centre may sit to one side of the body axis, as a share of half your shoulder width.</td><td class="num">40%</td></tr>
       <tr><td>Shoulder tilt allowed</td><td>How far the shoulder line may tilt against your body axis (full body only).</td><td class="num">4°</td></tr>
     </tbody>
   </table>

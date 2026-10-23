@@ -35,7 +35,7 @@ test('head messages use the dancer\'s own left and right', () => {
   const f = feedback(v({ head: { roll: -7.2, offset: 0.22, source: 'face', tilt: 'left', shift: 'left' } }));
   assert.equal(f.banner.text, 'Head tilted to your left');
   assert.equal(f.tiles.find((t) => t.id === 'headTilt').value, '7° to your left');
-  assert.equal(f.tiles.find((t) => t.id === 'headPos').value, 'Toward your left elbow');
+  assert.equal(f.tiles.find((t) => t.id === 'headPos').value, 'Off centre to your left');
 });
 
 test('sway reads in plain words', () => {

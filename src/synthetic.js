@@ -45,7 +45,7 @@ export const DEFAULT_DANCER = {
   headRoll: 0, // deg relative to the body; + = head tilted to the dancer's right
   headYaw: 0, // deg; + = face turned toward the dancer's left
   headPitch: 0,
-  headOffset: 0, // fraction of half the elbow span; + = toward the left elbow
+  headOffset: 0, // fraction of half the shoulder width; + = toward the dancer's left
   size: 1, // multiplies every body length below
   armReach: 0.3, // shoulder midpoint to elbow, in image heights
   shoulderHalf: 0.1,
@@ -74,9 +74,7 @@ export function makeDancer(overrides = {}) {
   const RE = [-p.armReach * Math.cos(rad(p.elevR)), p.armReach * Math.sin(rad(p.elevR))];
   const LH = [p.hipHalf, -p.torso];
   const RH = [-p.hipHalf, -p.torso];
-  const M = [(LE[0] + RE[0]) / 2, (LE[1] + RE[1]) / 2];
-  const halfSpan = (LE[0] - RE[0]) / 2;
-  const C = [M[0] + p.headOffset * halfSpan, p.headHeight];
+  const C = [p.headOffset * LS[0], p.headHeight]; // LS[0] = half the shoulder width along body-horizontal
 
   const head = (local) => {
     let q = rotX(local.map((c) => c * p.size), -p.headPitch);

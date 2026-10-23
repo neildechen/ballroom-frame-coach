@@ -67,12 +67,11 @@ export function measure({ pose, face, aspect }, opts = {}) {
   }
   const headRoll = axis ? signedAngle(axis, hL, u) : null;
 
-  let headOffset = null, M = null;
-  if (LE && RE) {
-    M = mid(LE, RE);
-    const halfSpan = dot(sub(LE, RE), hL) / 2;
-    if (w.C && halfSpan > 0) headOffset = dot(sub(w.C, M), hL) / halfSpan;
-  }
+  // Head position: sideways distance of the head centre from the body axis
+  // through S, as a fraction of half the shoulder width.
+  let headOffset = null;
+  const halfShoulders = dot(sub(w.LS, w.RS), hL) / 2;
+  if (w.C && halfShoulders > 0) headOffset = dot(sub(w.C, S), hL) / halfShoulders;
 
   return {
     tracked: true,
@@ -81,6 +80,6 @@ export function measure({ pose, face, aspect }, opts = {}) {
     elevL, elevR, shoulderTilt,
     headRoll, headOffset, headSource,
     frame,
-    points: { ...w, M, faceAxis: axis },
+    points: { ...w, faceAxis: axis },
   };
 }

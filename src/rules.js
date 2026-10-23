@@ -5,9 +5,9 @@ export const DEFAULT_TOLERANCES = Object.freeze({
   frameDeg: 3, // a side may sit this far below body-horizontal before it counts as dropping
   shoulderDeg: 4, // shoulder line vs body-horizontal (full mode only)
   headRollDeg: 5, // head tilt vs body-horizontal
-  headOffset: 0.15, // head centre vs elbow midpoint, fraction of half the elbow span
+  headOffset: 0.4, // head centre vs the body axis through the shoulder midpoint, fraction of half the shoulder width
   hysteresisDeg: 1, // a fault clears only once this far back inside its tolerance
-  hysteresisOffset: 0.03,
+  hysteresisOffset: 0.08,
 });
 
 const none = (value = null) => ({ value, fault: false, clear: true, dir: null });
@@ -35,7 +35,7 @@ export function evaluate(m, tolerances = {}) {
     shoulder: magnitude(m.shoulderTilt, t.shoulderDeg, t.hysteresisDeg, 'right', 'left'),
     // + roll = left side of the face higher = head leaning to the dancer's right
     headTilt: magnitude(m.headRoll, t.headRollDeg, t.hysteresisDeg, 'right', 'left'),
-    // + offset = toward the left elbow
+    // + offset = toward the dancer's left
     headShift: magnitude(m.headOffset, t.headOffset, t.hysteresisOffset, 'left', 'right'),
   };
 }

@@ -82,12 +82,9 @@ export function drawOverlay(ctx, { rect, aspect, mirror, verdict, dpr = 1 }) {
 
   const reach = Math.max(P.LE ? len(sub(P.LE, S)) : 0, P.RE ? len(sub(P.RE, S)) : 0, len(sub(P.LS, P.RS)));
 
-  // Reference: body axis (full) and the sway-adjusted horizontal through S.
-  if (m.mode === 'full') {
-    const H = mid(P.LH, P.RH);
-    const axisLen = len(sub(S, H));
-    line(ctx, map(H), map(add(S, scale(F.u, axisLen * 0.8))), COLORS.guide, 2 * k, [8 * k, 8 * k]);
-  }
+  // Reference: body axis from the hips up to S (full; the head target carries it on
+  // above S) and the sway-adjusted horizontal through S.
+  if (m.mode === 'full') line(ctx, map(mid(P.LH, P.RH)), map(S), COLORS.guide, 2 * k, [8 * k, 8 * k]);
   line(ctx, map(add(S, scale(F.hL, -reach * 1.15))), map(add(S, scale(F.hL, reach * 1.15))), COLORS.guide, 2 * k, [8 * k, 8 * k]);
 
   // Shoulder line (the reference itself in torso mode).
@@ -105,17 +102,14 @@ export function drawOverlay(ctx, { rect, aspect, mirror, verdict, dpr = 1 }) {
   }
   dot2(ctx, map(S), 6 * k, COLORS.guide);
 
-  // Head: ring at the head centre, face axis, and the vertical target through the elbow midpoint.
+  // Head: ring at the head centre, face axis, and the target: the body axis carried up from S.
   if (P.C) {
     const r = len(sub(P.LS, P.RS)) * 0.38;
     const tilt = verdict.head.tilt, shift = verdict.head.shift;
-    if (P.M) {
-      const up = dot(sub(P.C, P.M), F.u);
-      const target = add(P.M, scale(F.u, up));
-      line(ctx, map(P.M), map(add(P.M, scale(F.u, up + r * 1.4))), stateColor(shift), 2.5 * k, [5 * k, 7 * k]);
-      if (shift !== 'ok' && shift !== 'untracked') line(ctx, map(target), map(P.C), COLORS.fault, 3 * k);
-      dot2(ctx, map(P.M), 4 * k, stateColor(shift));
-    }
+    const up = dot(sub(P.C, S), F.u);
+    const target = add(S, scale(F.u, up));
+    line(ctx, map(S), map(add(S, scale(F.u, up + r * 1.4))), stateColor(shift), 2.5 * k, [5 * k, 7 * k]);
+    if (shift !== 'ok' && shift !== 'untracked') line(ctx, map(target), map(P.C), COLORS.fault, 3 * k);
     ring(ctx, map(P.C), r * rect.h, stateColor(shift), 3 * k); // world units are image heights
     if (P.faceAxis) {
       const a = map(add(P.C, scale(P.faceAxis, -r * 1.25)));

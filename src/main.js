@@ -20,10 +20,15 @@ const DEFAULTS = {
   lite: false,
   tol: { frameDeg: DEFAULT_TOLERANCES.frameDeg, headRollDeg: DEFAULT_TOLERANCES.headRollDeg, headOffset: DEFAULT_TOLERANCES.headOffset, shoulderDeg: DEFAULT_TOLERANCES.shoulderDeg },
 };
-const KEY = 'frame-coach-settings-v1';
+const KEY = 'frame-coach-settings-v2';
 function loadSettings() {
   try {
-    const s = JSON.parse(localStorage.getItem(KEY) || 'null');
+    let s = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (!s) {
+      // v1 measured head position against the elbows; its headOffset does not carry over.
+      s = JSON.parse(localStorage.getItem('frame-coach-settings-v1') || 'null');
+      if (s?.tol) delete s.tol.headOffset;
+    }
     return s ? { ...DEFAULTS, ...s, tol: { ...DEFAULTS.tol, ...s.tol } } : structuredClone(DEFAULTS);
   } catch {
     return structuredClone(DEFAULTS);
@@ -185,7 +190,7 @@ function tick() {
 const sliders = [
   ['#tol-frame', 'frameDeg', (v) => `${v}°`],
   ['#tol-roll', 'headRollDeg', (v) => `${v}°`],
-  ['#tol-offset', 'headOffset', (v) => `${Math.round(v * 100)}% of half the elbow span`],
+  ['#tol-offset', 'headOffset', (v) => `${Math.round(v * 100)}% of half your shoulder width`],
   ['#tol-shoulder', 'shoulderDeg', (v) => `${v}°`],
 ];
 

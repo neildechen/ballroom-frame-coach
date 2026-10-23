@@ -59,7 +59,7 @@ test('head roll is measured relative to the body and ignores head turn and nod',
   }
 });
 
-test('head offset is a fraction of half the elbow span, measured along body-horizontal', () => {
+test('head offset is a fraction of half the shoulder width, measured from the body axis along body-horizontal', () => {
   const m = run({ sway: -18, headOffset: 0.25, elevL: 5, elevR: 9 });
   close(m.headOffset, 0.25, 1e-6);
   const n = run({ headOffset: -0.4, headYaw: 40 });
@@ -99,5 +99,5 @@ test('untracked: a low-confidence elbow yields null for that side only', () => {
   assert.equal(m.tracked, true);
   assert.equal(m.elevL, null);
   close(m.elevR, -9, 1e-6);
-  assert.equal(m.headOffset, null, 'offset needs both elbows');
+  close(m.headOffset, 0, 1e-6, 'offset does not need the elbows');
 });

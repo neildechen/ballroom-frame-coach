@@ -48,7 +48,7 @@ test('smoothing does not bias a steady reading', () => {
 
 test('head tilt and shift are latched with direction', () => {
   const s = new Session();
-  const v = frames(s, { sway: 15, headRoll: -9, headOffset: 0.3 }, 0, 1500);
+  const v = frames(s, { sway: 15, headRoll: -9, headOffset: 0.8 }, 0, 1500);
   assert.equal(v.head.tilt, 'left');
   assert.equal(v.head.shift, 'left');
   const w = frames(s, { sway: 15 }, 1533, 3000);

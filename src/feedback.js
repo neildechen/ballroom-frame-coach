@@ -31,7 +31,7 @@ export function feedback(v) {
       ? { id: 'headPos', label: 'Head position', value: 'Not visible', tone: 'idle' }
       : h.shift === 'ok'
         ? { id: 'headPos', label: 'Head position', value: 'Centred', tone: 'ok' }
-        : { id: 'headPos', label: 'Head position', value: `Toward your ${side(h.shift)} elbow`, tone: 'fault' },
+        : { id: 'headPos', label: 'Head position', value: `Off centre to your ${side(h.shift)}`, tone: 'fault' },
     v.shoulder.state === 'off'
       ? { id: 'shoulders', label: 'Shoulders', value: 'Used as the level line', tone: 'idle' }
       : v.shoulder.state === 'untracked'
@@ -46,7 +46,7 @@ export function feedback(v) {
   else if (v.left.state === 'drop') text = 'Left side dropping';
   else if (v.right.state === 'drop') text = 'Right side dropping';
   else if (h.tilt === 'left' || h.tilt === 'right') text = `Head tilted to your ${h.tilt}`;
-  else if (h.shift === 'left' || h.shift === 'right') text = `Head drifting toward your ${h.shift} elbow`;
+  else if (h.shift === 'left' || h.shift === 'right') text = `Head drifting to your ${h.shift}`;
   else if (v.shoulder.state === 'left' || v.shoulder.state === 'right') text = `${v.shoulder.state === 'left' ? 'Left' : 'Right'} shoulder dropping`;
   if (text !== 'Frame level, head centred') tone = 'fault';
 

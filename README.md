@@ -15,7 +15,7 @@ Everything runs in the browser. Video never leaves the device, and nothing is re
 | Left side, right side | The line from the shoulder midpoint to that elbow is level with the body or above it | may sit 3° below |
 | Both sides down | Flags the umbrella frame: both elbows slanting down | same |
 | Head tilt | The head's left-right axis (from the face) is parallel to the body's horizontal, so it tilts with the sway | 5° |
-| Head position | The head centre (between the ears) sits over the midpoint of the two elbows | 15% of half the elbow span |
+| Head position | The head centre (between the ears) sits on the body axis carried up through the shoulder midpoint | 40% of half the shoulder width |
 | Shoulders (full body only) | The shoulder line stays square to the body axis | 4° |
 
 Turning the head to the left, as Standard hold asks, is ignored. All tolerances can be changed in Settings.
